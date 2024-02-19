@@ -10,11 +10,11 @@
 title Диаграмма архитектуры социальной сети
 
 
-' Пользователи
+' Users
 Person(user, 'Пользователь')
 
 
-' Контейнеры
+' Containers
 Container(webpage, 'веб-сайт социальной сети')
 
 Container(core, 'core', 'go', 'Клиентское API, регистрация и аутентификация пользователей', $sprite='go')
@@ -29,7 +29,7 @@ ContainerDb(statistics_ch, 'statistics_ch', 'clickhouse', 'Хранение ст
 ContainerQueue(views_topic, 'views.topic', 'kafka', $sprite='kafka')
 ContainerQueue(likes_topic, 'likes.topic', 'kafka', $sprite='kafka')
 
-' Связи
+' Relations
 Rel(user, webpage, 'Регистрация и аутентификация; работа с постами и комментариями; получение стен пользователей')
 Rel(webpage, core, 'Вызов методов [REST]')
 
