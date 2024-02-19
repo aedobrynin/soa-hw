@@ -4,6 +4,7 @@ skinparam linetype ortho
 
 title Диаграмма "сущность-связь" для социальной сети
 
+
 ' entities
 
 entity "User" as user {
@@ -44,6 +45,7 @@ entity "Like" as like {
   *liker_id: uuid <<FK>>
   *post_id: uuid<<FK>>
 }
+
 
 ' relations
 

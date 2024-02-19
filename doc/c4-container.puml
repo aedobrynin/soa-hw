@@ -29,6 +29,7 @@ ContainerDb(statistics_ch, 'statistics_ch', 'clickhouse', 'Хранение ст
 ContainerQueue(views_topic, 'views.topic', 'kafka', $sprite='kafka')
 ContainerQueue(likes_topic, 'likes.topic', 'kafka', $sprite='kafka')
 
+
 ' Relations
 Rel(user, webpage, 'Регистрация и аутентификация; работа с постами и комментариями; получение стен пользователей')
 Rel(webpage, core, 'Вызов методов [REST]')
