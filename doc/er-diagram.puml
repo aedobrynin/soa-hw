@@ -1,0 +1,60 @@
+@startuml ER Diagram
+
+skinparam linetype ortho
+
+title Диаграмма "сущность-связь" для социальной сети
+
+' entities
+
+entity "User" as user {
+  *id : uuid <<generated, PK>>
+  --
+  *name : text
+  *surname : text
+  *age: uint
+  *login: text
+  *password_hash: text
+  motto : text
+}
+
+entity "Post" as post {
+  *id: uuid <<generated, PK>>
+  --
+  *created_ts: uint
+  *author_id: uuid <<FK>>
+}
+
+
+entity "Comment" as comment {
+  *id: uuid <<generated, PK>>
+  --
+  *created_ts: uint
+  *author_id: uuid <<FK>>
+  *post_id: uuid <<FK>>
+}
+
+entity "View" as view {
+  --
+  *viewer_id: uuid <<FK>>
+  *post_id: uuid <<FK>>
+}
+
+entity "Like" as like {
+  --
+  *liker_id: uuid <<FK>>
+  *post_id: uuid<<FK>>
+}
+
+' relations
+
+post }|--|| user
+comment }o--|| post
+comment }o--|| user
+
+view }o--|| user
+view }o--|| post
+
+like }o--|| user
+like }o--|| post
+
+@enduml

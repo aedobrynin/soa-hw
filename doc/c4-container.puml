@@ -1,4 +1,4 @@
-@startuml C4 container diagram
+@startuml C4 Container Diagram
 
 !include <C4/C4_Container>
 
