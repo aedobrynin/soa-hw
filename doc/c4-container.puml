@@ -1,0 +1,49 @@
+@startuml C4 Container Diagram
+
+!include <C4/C4_Container>
+
+!define DEVICONS https://raw.githubusercontent.com/plantuml-stdlib/gilbarbara-plantuml-sprites/master/sprites
+!include DEVICONS/go.puml
+!include DEVICONS/postgresql.puml
+!include DEVICONS/kafka.puml
+
+title Диаграмма архитектуры социальной сети
+
+
+' Users
+Person(user, 'Пользователь')
+
+
+' Containers
+Container(webpage, 'веб-сайт социальной сети')
+
+Container(core, 'core', 'go', 'Клиентское API, регистрация и аутентификация пользователей', $sprite='go')
+ContainerDb(core_postgres, 'core_db', 'postgresql', 'Хранит аутентификационные данные пользователей', $sprite='postgresql')
+
+Container(posts, 'posts', 'go', 'Сервис для работы с постами и комментариями', $sprite='go')
+ContainerDb(posts_postgres, 'posts_postgres', 'postgresql', 'Хранит посты и комментарии', $sprite='postgresql')
+
+Container(statistics, 'statistics', 'go', 'Сервис для работы со статистикой', $sprite='go')
+ContainerDb(statistics_ch, 'statistics_ch', 'clickhouse', 'Хранение статистики (лайки, просмотры)', )
+
+ContainerQueue(views_topic, 'views.topic', 'kafka', $sprite='kafka')
+ContainerQueue(likes_topic, 'likes.topic', 'kafka', $sprite='kafka')
+
+
+' Relations
+Rel(user, webpage, 'Регистрация и аутентификация; работа с постами и комментариями; получение стен пользователей')
+Rel(webpage, core, 'Вызов методов [REST]')
+
+Rel(core, core_postgres, 'CRUD-операции над аутентификационными данными')
+
+Rel(core, posts, 'Работа с постами и комментариями [gRPC]')
+Rel(core, views_topic, 'Пишет в топик информацию о просмотрах постов')
+Rel(core, likes_topic, 'Пишет в топик информацию о лайках постов')
+Rel(core, statistics, 'Получение информации о кол-ве лайков и просмотров [gRPC]')
+
+Rel(posts, posts_postgres, 'CRUD-операции над постами и комментариями')
+
+Rel(statistics, statistics_ch, 'CRUD-операции над лайками и просмотрами')
+Rel(views_topic, statistics, 'Читает из топика информацию о просмотрах постов')
+Rel(likes_topic, statistics, 'Читает из топика информацию о лайках постов')
+@enduml
