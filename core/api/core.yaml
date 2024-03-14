@@ -1,0 +1,214 @@
+openapi: 3.1.0
+info:
+  title: Core service API
+  version: 1.0.0
+
+paths:
+  /v1/sign_up:
+    post:
+      summary: Register new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                login:
+                  type: string
+                  minLength: 1
+                  maxLength: 25
+                password:
+                  type: string
+                  minLength: 10
+                  maxLength: 255
+              required:
+                - login
+                - password
+      responses:
+        '200':
+          description: OK
+        '422':
+          description: User data didn't meet the requirements
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+
+  /v1/auth:
+    post:
+      summary: Authentificate user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                login:
+                  type: string
+                password:
+                  type: string
+              required:
+                - login
+                - password
+      responses:
+        '200':
+          description: |
+            OK. The session is returned in a cookie named `X_SESSION`
+            You need to include this cookie in subsequent requests.
+          headers: # TODO: use refresh token too
+            Set-Cookie:
+              schema:
+                type: string
+                example: X_SESSION=example; Path=/
+        '401':
+          description: Bad credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+
+  /v1/change_name:
+    post:
+      parameters:
+        # TODO: use refresh token too
+        - in: cookie
+          name: X_SESSION
+          schema:
+            type: string
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 25
+              required:
+                - name
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unathorized
+        '422':
+          description: name didn't meet the requirements
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+
+  /v1/change_surname:
+    post:
+      parameters:
+        # TODO: use refresh token too
+        - in: cookie
+          name: X_SESSION
+          schema:
+            type: string
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                surname:
+                  type: string
+                  minLength: 1
+                  maxLength: 25
+              required:
+                - surname
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unathorized
+        '422':
+          description: surname didn't meet the requirements
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+
+  /v1/change_email:
+    post:
+      parameters:
+        # TODO: use refresh token too
+        - in: cookie
+          name: X_SESSION
+          schema:
+            type: string
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  minLength: 1
+                  maxLength: 25
+              required:
+                - email
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unathorized
+        '422':
+          description: email didn't meet the requirements
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+
+  /v1/change_phone:
+    post:
+      parameters:
+        # TODO: use refresh token too
+        - in: cookie
+          name: X_SESSION
+          schema:
+            type: string
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                phone:
+                  type: string
+              required:
+                - phone
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unathorized
+        '422':
+          description: phone didn't meet the requirements
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+
+components:
+  schemas:
+    ErrorMessage:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
