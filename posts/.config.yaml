@@ -1,0 +1,7 @@
+app:
+  debug: true
+database:
+  dsn: postgresql://posts_postgres:5432/core?user=postgres&password=postgres&sslmode=disable
+  migrations_dir: 'file://postgresql/core/migrations/'
+grpc:
+  port: 8080

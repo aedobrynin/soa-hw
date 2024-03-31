@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package posts;
+
+option go_package = "github.com/aedobrynin/soa-hw/posts//grpcadapter/gen";
+
+service Posts {
+  rpc CreatePost(CreatePostRequest) returns (CreatePostResponse) {}
+}
+
+message CreatePostRequest {
+  string author_id = 1;
+  string content = 2;
+}
+
+message CreatePostResponse { string post_id = 1; }
