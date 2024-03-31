@@ -281,6 +281,19 @@ func (a *adapter) PostV1PostsRetrieve(
 	ctx context.Context,
 	request codegen.PostV1PostsRetrieveRequestObject,
 ) (codegen.PostV1PostsRetrieveResponseObject, error) {
+	// TODO: use refresh token too
+	// TODO: make it helper function
+	_, _, err := a.authService.ValidateAndRefresh(
+		ctx,
+		&model.TokenPair{AccessToken: request.Params.XSESSION, RefreshToken: ""},
+	)
+	switch {
+	case errors.Is(err, service.ErrUnsupportedClaims) || errors.Is(err, service.ErrUnauthorized):
+		return codegen.PostV1PostsRetrieve401Response{}, nil
+	case err != nil:
+		return nil, err
+	}
+
 	post, err := a.postsClient.GetPost(ctx, request.Params.PostId)
 	if errors.Is(err, clients.ErrPostNotFound) {
 		return codegen.PostV1PostsRetrieve404Response{}, nil

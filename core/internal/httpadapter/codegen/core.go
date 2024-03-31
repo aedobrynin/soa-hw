@@ -106,7 +106,8 @@ type PostV1PostsEditParams struct {
 
 // PostV1PostsRetrieveParams defines parameters for PostV1PostsRetrieve.
 type PostV1PostsRetrieveParams struct {
-	PostId openapi_types.UUID `form:"post_id" json:"post_id"`
+	PostId   openapi_types.UUID `form:"post_id" json:"post_id"`
+	XSESSION string             `form:"X_SESSION" json:"X_SESSION"`
 }
 
 // PostV1SignUpJSONBody defines parameters for PostV1SignUp.
@@ -559,6 +560,22 @@ func (siw *ServerInterfaceWrapper) PostV1PostsRetrieve(w http.ResponseWriter, r 
 	err = runtime.BindQueryParameter("form", true, true, "post_id", r.URL.Query(), &params.PostId)
 	if err != nil {
 		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "post_id", Err: err})
+		return
+	}
+
+	var cookie *http.Cookie
+
+	if cookie, err = r.Cookie("X_SESSION"); err == nil {
+		var value string
+		err = runtime.BindStyledParameter("simple", true, "X_SESSION", cookie.Value, &value)
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X_SESSION", Err: err})
+			return
+		}
+		params.XSESSION = value
+
+	} else {
+		siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "X_SESSION"})
 		return
 	}
 
@@ -1042,6 +1059,14 @@ func (response PostV1PostsRetrieve200JSONResponse) VisitPostV1PostsRetrieveRespo
 	w.WriteHeader(200)
 
 	return json.NewEncoder(w).Encode(response)
+}
+
+type PostV1PostsRetrieve401Response struct {
+}
+
+func (response PostV1PostsRetrieve401Response) VisitPostV1PostsRetrieveResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
 }
 
 type PostV1PostsRetrieve404Response struct {

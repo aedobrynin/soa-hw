@@ -241,6 +241,12 @@ paths:
     post:
       description: retrieve post
       parameters:
+        # TODO: use refresh token too
+        - in: cookie
+          name: X_SESSION
+          schema:
+            type: string
+          required: true
         - in: query
           name: post_id
           schema:
@@ -254,6 +260,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Post'
+        '401':
+          description: Unathorized
         '404':
           description: Post not found
         '422':
