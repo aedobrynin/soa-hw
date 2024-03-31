@@ -34,12 +34,15 @@ func (r *postRepo) WithNewTx(ctx context.Context, f func(ctx context.Context) er
 	})
 }
 
-func (r *postRepo) AddPost(ctx context.Context, authorId uuid.UUID, content string) error {
+func (r *postRepo) AddPost(ctx context.Context, authorId uuid.UUID, content string) (uuid.UUID, error) {
 	postId := generatePostId()
 
 	_, err := r.conn(ctx).Exec(ctx, `INSERT INTO posts.posts (id, author_id, content) VALUES ($1, $2, $3)`,
 		postId, authorId, content)
-	return err
+	if err != nil {
+		return uuid.Nil, err
+	}
+	return postId, err
 }
 
 func New(logger *zap.Logger, pgxPool *pgxpool.Pool) repo.Post {

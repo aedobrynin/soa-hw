@@ -2,9 +2,10 @@ package usersvc
 
 import (
 	"context"
-	"core/internal/repo"
-	"core/internal/service"
 	"errors"
+
+	"github.com/aedobrynin/soa-hw/core/internal/repo"
+	"github.com/aedobrynin/soa-hw/core/internal/service"
 
 	"github.com/gofrs/uuid"
 )

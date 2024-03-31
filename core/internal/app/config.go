@@ -6,8 +6,8 @@ import (
 
 	"gopkg.in/yaml.v3"
 
-	"core/internal/httpadapter"
-	"core/internal/service"
+	"github.com/aedobrynin/soa-hw/core/internal/httpadapter"
+	"github.com/aedobrynin/soa-hw/core/internal/service"
 )
 
 const (

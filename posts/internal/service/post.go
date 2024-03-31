@@ -7,5 +7,5 @@ import (
 )
 
 type Post interface {
-	AddPost(ctx context.Context, authorId uuid.UUID, content string) error
+	AddPost(ctx context.Context, authorId uuid.UUID, content string) (postId uuid.UUID, err error)
 }

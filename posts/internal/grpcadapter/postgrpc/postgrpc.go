@@ -36,9 +36,11 @@ func (s *serverAPI) CreatePost(
 	if err != nil {
 		return &gen.CreatePostResponse{}, status.Error(codes.InvalidArgument, "author_id should be valid uuid")
 	}
-	s.post.AddPost(ctx, authorId, request.Content)
-	// TODO
+	postId, err := s.post.AddPost(ctx, authorId, request.Content)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "internal error")
+	}
 	return &gen.CreatePostResponse{
-		PostId: "kek",
+		PostId: postId.String(),
 	}, nil
 }

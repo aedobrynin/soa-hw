@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"core/internal/model"
+	"github.com/aedobrynin/soa-hw/core/internal/model"
 
 	"github.com/gofrs/uuid"
 )

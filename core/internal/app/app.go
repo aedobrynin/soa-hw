@@ -11,11 +11,11 @@ import (
 
 	"github.com/jackc/pgx/v4/pgxpool"
 
-	"core/internal/httpadapter"
-	"core/internal/repo/userrepo"
-	"core/internal/service"
-	"core/internal/service/authsvc"
-	"core/internal/service/usersvc"
+	"github.com/aedobrynin/soa-hw/core/internal/httpadapter"
+	"github.com/aedobrynin/soa-hw/core/internal/repo/userrepo"
+	"github.com/aedobrynin/soa-hw/core/internal/service"
+	"github.com/aedobrynin/soa-hw/core/internal/service/authsvc"
+	"github.com/aedobrynin/soa-hw/core/internal/service/usersvc"
 
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"

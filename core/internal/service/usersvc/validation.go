@@ -1,10 +1,11 @@
 package usersvc
 
 import (
-	"core/internal/service"
 	"net/mail"
 	"strings"
 	"unicode"
+
+	"github.com/aedobrynin/soa-hw/core/internal/service"
 )
 
 func isAsciiLetter(r rune) bool {

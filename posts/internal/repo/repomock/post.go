@@ -7,20 +7,20 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-type UserMock struct {
+type PostMock struct {
 	mock.Mock
 }
 
-func (m *UserMock) WithNewTx(ctx context.Context, f func(ctx context.Context) error) error {
+func (m *PostMock) WithNewTx(ctx context.Context, f func(ctx context.Context) error) error {
 	args := m.Called(ctx, f)
 	return args.Error(0)
 }
 
-func (m *UserMock) AddPost(ctx context.Context, authorId uuid.UUID, content string) error {
+func (m *PostMock) AddPost(ctx context.Context, authorId uuid.UUID, content string) (uuid.UUID, error) {
 	args := m.Called(ctx, authorId, content)
-	return args.Error(0)
+	return args.Get(0).(uuid.UUID), args.Error(1)
 }
 
-func NewUser() *UserMock {
-	return &UserMock{}
+func NewPost() *PostMock {
+	return &PostMock{}
 }

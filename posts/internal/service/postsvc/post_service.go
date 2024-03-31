@@ -15,9 +15,15 @@ type postSvc struct {
 	repo   repo.Post
 }
 
-func (s *postSvc) AddPost(ctx context.Context, authorId uuid.UUID, content string) error {
-	// TODO
-	return nil
+func (s *postSvc) AddPost(ctx context.Context, authorId uuid.UUID, content string) (uuid.UUID, error) {
+	defer s.logger.Sync()
+	s.logger.Sugar().Infof("Trying to add post with author_id=%s, content=%s", authorId.String(), content)
+
+	if len(content) == 0 {
+		return uuid.Nil, service.ErrContentIsEmpty
+	}
+
+	return s.repo.AddPost(ctx, authorId, content)
 }
 
 func New(logger *zap.Logger, repo repo.Post) service.Post {

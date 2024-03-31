@@ -10,9 +10,11 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 	"golang.org/x/crypto/bcrypt"
 
-	"core/internal/model"
-	"core/internal/repo"
-	"core/internal/service"
+	"github.com/aedobrynin/soa-hw/core/internal/service"
+
+	"github.com/aedobrynin/soa-hw/core/internal/repo"
+
+	"github.com/aedobrynin/soa-hw/core/internal/model"
 )
 
 const (

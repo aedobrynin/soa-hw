@@ -5,11 +5,11 @@ import (
 	"testing"
 	"time"
 
-	"core/internal/model"
-	"core/internal/repo"
-	"core/internal/repo/repomock"
-	"core/internal/service"
-	"core/internal/service/authsvc"
+	"github.com/aedobrynin/soa-hw/core/internal/model"
+	"github.com/aedobrynin/soa-hw/core/internal/repo"
+	"github.com/aedobrynin/soa-hw/core/internal/repo/repomock"
+	"github.com/aedobrynin/soa-hw/core/internal/service"
+	"github.com/aedobrynin/soa-hw/core/internal/service/authsvc"
 
 	"github.com/gofrs/uuid"
 	"github.com/stretchr/testify/mock"

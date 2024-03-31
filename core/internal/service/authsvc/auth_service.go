@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"time"
 
-	"core/internal/model"
-	"core/internal/repo"
-	"core/internal/service"
+	"github.com/aedobrynin/soa-hw/core/internal/model"
+	"github.com/aedobrynin/soa-hw/core/internal/repo"
+	"github.com/aedobrynin/soa-hw/core/internal/service"
 
 	"github.com/gofrs/uuid"
 	"github.com/golang-jwt/jwt/v4"

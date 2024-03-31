@@ -7,10 +7,10 @@ import (
 	"net"
 	"net/http"
 
-	"core/internal/httpadapter/codegen"
-	"core/internal/logger"
-	"core/internal/model"
-	"core/internal/service"
+	"github.com/aedobrynin/soa-hw/core/internal/httpadapter/codegen"
+	"github.com/aedobrynin/soa-hw/core/internal/logger"
+	"github.com/aedobrynin/soa-hw/core/internal/model"
+	"github.com/aedobrynin/soa-hw/core/internal/service"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/juju/zaputil/zapctx"

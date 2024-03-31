@@ -2,16 +2,16 @@ package usersvc_test
 
 import (
 	"context"
-	"core/internal/repo"
-	"core/internal/repo/repomock"
-	"core/internal/service"
 	"strings"
 	"testing"
 
-	"core/internal/service/usersvc"
-
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
+
+	"github.com/aedobrynin/soa-hw/core/internal/repo"
+	"github.com/aedobrynin/soa-hw/core/internal/repo/repomock"
+	"github.com/aedobrynin/soa-hw/core/internal/service"
+	"github.com/aedobrynin/soa-hw/core/internal/service/usersvc"
 )
 
 func TestSignUpLoginValidation(t *testing.T) {
@@ -111,3 +111,6 @@ func TestSignUpLoginIsTaken(t *testing.T) {
 }
 
 // TODO: test ChangeName
+// TODO: test ChangeSurname
+// TODO: test ChangeEmail
+// TODO: test ChangePhone

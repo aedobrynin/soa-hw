@@ -1,4 +1,4 @@
-module core
+module github.com/aedobrynin/soa-hw/core
 
 go 1.21.1
 
