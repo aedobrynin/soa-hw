@@ -14,3 +14,5 @@ COPY cmd ./cmd
 
 WORKDIR /app/cmd/core
 RUN go build -o main
+
+# TODO: run oapi-codegen here

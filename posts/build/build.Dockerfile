@@ -14,3 +14,5 @@ COPY cmd ./cmd
 
 WORKDIR /app/cmd/posts
 RUN go build -o main
+
+# TODO: run grpc-generate here
