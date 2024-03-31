@@ -2,10 +2,12 @@ package postsvc
 
 import (
 	"context"
+	"errors"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/zap"
 
+	"github.com/aedobrynin/soa-hw/posts/internal/model"
 	"github.com/aedobrynin/soa-hw/posts/internal/repo"
 	"github.com/aedobrynin/soa-hw/posts/internal/service"
 )
@@ -24,6 +26,61 @@ func (s *postSvc) AddPost(ctx context.Context, authorId uuid.UUID, content strin
 	}
 
 	return s.repo.AddPost(ctx, authorId, content)
+}
+
+func (s *postSvc) EditPost(ctx context.Context, postId uuid.UUID, editorId uuid.UUID, newContent string) error {
+	if len(newContent) == 0 {
+		return service.ErrContentIsEmpty
+	}
+
+	post, err := s.repo.GetPost(ctx, postId)
+	if errors.Is(err, repo.ErrPostNotFound) {
+		return service.ErrPostNotFound
+	}
+	if err != nil {
+		return err
+	}
+
+	if post.AuthorId != editorId {
+		return service.ErrInsufficientPermissions
+	}
+
+	err = s.repo.EditPost(ctx, postId, newContent)
+	if errors.Is(err, repo.ErrPostNotFound) {
+		return service.ErrPostNotFound
+	}
+	return err
+}
+
+func (s *postSvc) DeletePost(ctx context.Context, postId uuid.UUID, deleterId uuid.UUID) error {
+	post, err := s.repo.GetPost(ctx, postId)
+	if errors.Is(err, repo.ErrPostNotFound) {
+		return service.ErrPostNotFound
+	}
+	if err != nil {
+		return err
+	}
+
+	if post.AuthorId != deleterId {
+		return service.ErrInsufficientPermissions
+	}
+
+	err = s.repo.DeletePost(ctx, postId)
+	if errors.Is(err, repo.ErrPostNotFound) {
+		return service.ErrPostNotFound
+	}
+	return err
+}
+func (s *postSvc) GetPost(ctx context.Context, postId uuid.UUID) (*model.Post, error) {
+	post, err := s.repo.GetPost(ctx, postId)
+	if errors.Is(err, repo.ErrPostNotFound) {
+		return nil, service.ErrPostNotFound
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return post, nil
 }
 
 func New(logger *zap.Logger, repo repo.Post) service.Post {

@@ -55,3 +55,39 @@ func TestAddPostEmptyContent(t *testing.T) {
 	require.Equal(t, returnedPostId, uuid.Nil)
 	require.Equal(t, err, service.ErrContentIsEmpty)
 }
+
+func TestEditPostPostNotFound(t *testing.T) {
+	// TODO
+}
+
+func TestEditPostEmptyContent(t *testing.T) {
+	// TODO
+}
+
+func TestEditPostInsufficientPermissions(t *testing.T) {
+	//TODO
+}
+
+func TestEditPostHappyPath(t *testing.T) {
+	// TODO
+}
+
+func TestDeletePostPostNotFound(t *testing.T) {
+	// TODO
+}
+
+func TestDeletePostinsufficientPermissions(t *testing.T) {
+	// TODO
+}
+
+func TestDeletePostHappyPath(t *testing.T) {
+	// TODO
+}
+
+func TestGetPostPostNotFound(t *testing.T) {
+	// TODO
+}
+
+func TestGetPostHappyPath(t *testing.T) {
+	// TODO
+}
