@@ -13,4 +13,9 @@ type PostsClient interface {
 	EditPost(ctx context.Context, postId uuid.UUID, editorId uuid.UUID, newContent string) error
 	DeletePost(ctx context.Context, postId uuid.UUID, deleterId uuid.UUID) error
 	GetPost(ctx context.Context, postId uuid.UUID) (*gen.Post, error)
+	ListPosts(
+		ctx context.Context,
+		pageSize uint32,
+		pageToken string,
+	) (posts []*gen.Post, nextPageToken string, err error)
 }

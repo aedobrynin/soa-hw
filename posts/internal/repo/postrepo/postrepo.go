@@ -84,6 +84,34 @@ func (r *postRepo) DeletePost(ctx context.Context, postId uuid.UUID) error {
 	return nil
 }
 
+func (r *postRepo) ListPosts(ctx context.Context, from int, to int) ([]model.Post, error) {
+	// TODO: better
+	defer r.logger.Sync()
+	r.logger.Debug("ListPosts: executing query")
+	rows, err := r.conn(ctx).
+		Query(ctx, `SELECT id, author_id, content, created_ts, updated_ts FROM posts.posts ORDER BY created_ts DESC LIMIT $1 OFFSET $2`, to-from, from)
+	if err != nil {
+		r.logger.Sugar().Debugf("error %v", err)
+		return nil, err
+	}
+
+	posts := make([]model.Post, 0)
+	for rows.Next() {
+		var post model.Post
+		if err := rows.Scan(&post.Id, &post.AuthorId, &post.Content, &post.CreatedTs, &post.UpdatedTs); err != nil {
+			if errors.Is(err, pgx.ErrNoRows) {
+				r.logger.Debug("ListPosts: return 0 posts")
+				return posts, nil
+			}
+			r.logger.Sugar().Debugf("ListPosts: error %v", err)
+			return nil, err
+		}
+		posts = append(posts, post)
+	}
+	r.logger.Sugar().Debugf("ListPosts: return %d posts", len(posts))
+	return posts, nil
+}
+
 func New(logger *zap.Logger, pgxPool *pgxpool.Pool) repo.Post {
 	return &postRepo{
 		logger:  logger,

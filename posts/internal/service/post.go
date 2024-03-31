@@ -13,4 +13,5 @@ type Post interface {
 	EditPost(ctx context.Context, postId uuid.UUID, editorId uuid.UUID, newContent string) error
 	DeletePost(ctx context.Context, postId uuid.UUID, deleterId uuid.UUID) error
 	GetPost(ctx context.Context, postId uuid.UUID) (*model.Post, error)
+	ListPosts(ctx context.Context, pageSize int, pageToken string) (posts []model.Post, newPageToken string, err error)
 }

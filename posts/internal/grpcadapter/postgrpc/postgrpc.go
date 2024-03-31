@@ -112,3 +112,22 @@ func (s *serverAPI) GetPost(ctx context.Context, request *gen.GetPostRequest) (*
 		Content:  post.Content,
 	}, nil
 }
+
+func (s *serverAPI) ListPosts(ctx context.Context, request *gen.ListPostsRequest) (*gen.ListPostsResponse, error) {
+	posts, nextPageToken, err := s.post.ListPosts(ctx, int(request.PageSize), request.PageToken)
+	if errors.Is(err, service.ErrBadPageToken) {
+		return nil, status.Errorf(codes.InvalidArgument, "bad page token")
+	}
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "internal error")
+	}
+
+	respPosts := make([]*gen.Post, 0, len(posts))
+	for _, post := range posts {
+		respPosts = append(respPosts, &gen.Post{AuthorId: post.AuthorId.String(), Content: post.Content})
+	}
+	return &gen.ListPostsResponse{
+		Posts:         respPosts,
+		NextPageToken: nextPageToken,
+	}, nil
+}

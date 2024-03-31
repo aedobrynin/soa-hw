@@ -11,6 +11,12 @@ service Posts {
   rpc EditPost(EditPostRequest) returns (google.protobuf.Empty) {}
   rpc DeletePost(DeletePostRequest) returns (google.protobuf.Empty) {}
   rpc GetPost(GetPostRequest) returns (Post) {}
+  rpc ListPosts(ListPostsRequest) returns (ListPostsResponse);
+}
+
+message Post {
+  string author_id = 1;
+  string content = 2;
 }
 
 message CreatePostRequest {
@@ -33,7 +39,12 @@ message DeletePostRequest {
 
 message GetPostRequest { string post_id = 1; }
 
-message Post {
-  string author_id = 1;
-  string content = 2;
+message ListPostsRequest {
+  uint32 page_size = 2;
+  string page_token = 3;
+}
+
+message ListPostsResponse {
+  repeated Post posts = 1;
+  string next_page_token = 2;
 }

@@ -14,4 +14,6 @@ type Post interface {
 	GetPost(ctx context.Context, postId uuid.UUID) (*model.Post, error)
 	EditPost(ctx context.Context, postId uuid.UUID, content string) error
 	DeletePost(ctx context.Context, postId uuid.UUID) error
+	// TODO: better
+	ListPosts(ctx context.Context, from int, to int) ([]model.Post, error)
 }

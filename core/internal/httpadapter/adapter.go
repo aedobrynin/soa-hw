@@ -307,6 +307,54 @@ func (a *adapter) PostV1PostsRetrieve(
 	return codegen.PostV1PostsRetrieve200JSONResponse(codegen.Post{AuthorId: authorId, Content: post.Content}), nil
 }
 
+// (POST /v1/posts/list)
+func (a *adapter) PostV1PostsList(
+	ctx context.Context,
+	request codegen.PostV1PostsListRequestObject,
+) (codegen.PostV1PostsListResponseObject, error) {
+	// TODO: use refresh token too
+	// TODO: make it helper function
+	_, _, err := a.authService.ValidateAndRefresh(
+		ctx,
+		&model.TokenPair{AccessToken: request.Params.XSESSION, RefreshToken: ""},
+	)
+	switch {
+	case errors.Is(err, service.ErrUnsupportedClaims) || errors.Is(err, service.ErrUnauthorized):
+		return codegen.PostV1PostsList401Response{}, nil
+	case err != nil:
+		return nil, err
+	}
+
+	var pageToken string
+	if request.Params.PageToken != nil {
+		pageToken = *request.Params.PageToken
+	} else {
+		pageToken = ""
+	}
+
+	posts, nextPageToken, err := a.postsClient.ListPosts(
+		ctx,
+		uint32(request.Params.PageSize),
+		pageToken,
+	)
+	if errors.Is(err, clients.ErrBadPageToken) {
+		return codegen.PostV1PostsList422JSONResponse(codegen.ErrorMessage{Error: err.Error()}), nil
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	respPosts := make([]codegen.Post, 0, len(posts))
+	for _, post := range posts {
+		authorId, err := uuid.Parse(post.AuthorId)
+		if err != nil {
+			return nil, err
+		}
+		respPosts = append(respPosts, codegen.Post{AuthorId: authorId, Content: post.Content})
+	}
+	return codegen.PostV1PostsList200JSONResponse{NextPageToken: nextPageToken, Posts: respPosts}, nil
+}
+
 func (a *adapter) Serve() error {
 	logger, err := logger.GetLogger(true)
 	if err != nil {

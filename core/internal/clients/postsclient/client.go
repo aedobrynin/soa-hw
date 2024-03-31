@@ -105,6 +105,21 @@ func (c *PostsClient) GetPost(
 	return post, nil
 }
 
+func (c *PostsClient) ListPosts(
+	ctx context.Context,
+	pageSize uint32,
+	pageToken string,
+) (posts []*gen.Post, nextPageToken string, err error) {
+	resp, err := c.api.ListPosts(ctx, &gen.ListPostsRequest{PageSize: pageSize, PageToken: pageToken})
+	if err != nil {
+		if status.Code(err) == codes.InvalidArgument {
+			return nil, "", clients.ErrBadPageToken
+		}
+		return nil, "", err
+	}
+	return resp.Posts, resp.NextPageToken, nil
+}
+
 func New(
 	ctx context.Context,
 	config *PostsClientConfig,

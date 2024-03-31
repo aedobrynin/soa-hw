@@ -27,6 +27,7 @@ type PostsClient interface {
 	EditPost(ctx context.Context, in *EditPostRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	DeletePost(ctx context.Context, in *DeletePostRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	GetPost(ctx context.Context, in *GetPostRequest, opts ...grpc.CallOption) (*Post, error)
+	ListPosts(ctx context.Context, in *ListPostsRequest, opts ...grpc.CallOption) (*ListPostsResponse, error)
 }
 
 type postsClient struct {
@@ -73,6 +74,15 @@ func (c *postsClient) GetPost(ctx context.Context, in *GetPostRequest, opts ...g
 	return out, nil
 }
 
+func (c *postsClient) ListPosts(ctx context.Context, in *ListPostsRequest, opts ...grpc.CallOption) (*ListPostsResponse, error) {
+	out := new(ListPostsResponse)
+	err := c.cc.Invoke(ctx, "/posts.Posts/ListPosts", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // PostsServer is the server API for Posts service.
 // All implementations must embed UnimplementedPostsServer
 // for forward compatibility
@@ -81,6 +91,7 @@ type PostsServer interface {
 	EditPost(context.Context, *EditPostRequest) (*empty.Empty, error)
 	DeletePost(context.Context, *DeletePostRequest) (*empty.Empty, error)
 	GetPost(context.Context, *GetPostRequest) (*Post, error)
+	ListPosts(context.Context, *ListPostsRequest) (*ListPostsResponse, error)
 	mustEmbedUnimplementedPostsServer()
 }
 
@@ -99,6 +110,9 @@ func (UnimplementedPostsServer) DeletePost(context.Context, *DeletePostRequest) 
 }
 func (UnimplementedPostsServer) GetPost(context.Context, *GetPostRequest) (*Post, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetPost not implemented")
+}
+func (UnimplementedPostsServer) ListPosts(context.Context, *ListPostsRequest) (*ListPostsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListPosts not implemented")
 }
 func (UnimplementedPostsServer) mustEmbedUnimplementedPostsServer() {}
 
@@ -185,6 +199,24 @@ func _Posts_GetPost_Handler(srv interface{}, ctx context.Context, dec func(inter
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Posts_ListPosts_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListPostsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PostsServer).ListPosts(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/posts.Posts/ListPosts",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PostsServer).ListPosts(ctx, req.(*ListPostsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Posts_ServiceDesc is the grpc.ServiceDesc for Posts service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -207,6 +239,10 @@ var Posts_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetPost",
 			Handler:    _Posts_GetPost_Handler,
+		},
+		{
+			MethodName: "ListPosts",
+			Handler:    _Posts_ListPosts_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -3,6 +3,7 @@ package postsvc
 import (
 	"context"
 	"errors"
+	"strconv"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -87,6 +88,40 @@ func (s *postSvc) GetPost(ctx context.Context, postId uuid.UUID) (*model.Post, e
 	}
 
 	return post, nil
+}
+
+// TODO: better
+func pageTokenToPage(pageToken string) (int, error) {
+	if pageToken == "" {
+		return 0, nil
+	}
+	page, err := strconv.Atoi(pageToken)
+	if err != nil {
+		return 0, service.ErrBadPageToken
+	}
+	return page, nil
+}
+
+func (s *postSvc) ListPosts(ctx context.Context, pageSize int, pageToken string) ([]model.Post, string, error) {
+	page, err := pageTokenToPage(pageToken)
+	if err != nil {
+		return nil, "", err
+	}
+
+	if pageSize == 0 {
+		pageSize = 5
+	}
+	// TODO: better
+	if pageSize > 100 {
+		pageSize = 100
+	}
+
+	s.logger.Debug("repo.ListPosts")
+	posts, err := s.repo.ListPosts(ctx, page, page+pageSize)
+	if err != nil {
+		return nil, "", err
+	}
+	return posts, strconv.Itoa(page + len(posts)), nil
 }
 
 func New(logger *zap.Logger, repo repo.Post) service.Post {

@@ -38,6 +38,11 @@ func (m *PostMock) DeletePost(ctx context.Context, postId uuid.UUID) error {
 	return args.Error(0)
 }
 
+func (m *PostMock) ListPosts(ctx context.Context, from int, to int) ([]model.Post, error) {
+	args := m.Called(ctx, from, to)
+	return args.Get(0).([]model.Post), args.Error(1)
+}
+
 func NewPost() *PostMock {
 	return &PostMock{}
 }
