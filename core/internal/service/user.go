@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 
-	"github.com/gofrs/uuid"
+	"github.com/google/uuid"
 )
 
 type User interface {

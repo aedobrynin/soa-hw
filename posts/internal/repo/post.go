@@ -3,7 +3,7 @@ package repo
 import (
 	"context"
 
-	"github.com/gofrs/uuid"
+	"github.com/google/uuid"
 
 	"github.com/aedobrynin/soa-hw/posts/internal/model"
 )

@@ -6,6 +6,7 @@ import (
 
 	"gopkg.in/yaml.v3"
 
+	"github.com/aedobrynin/soa-hw/core/internal/clients/postsclient"
 	"github.com/aedobrynin/soa-hw/core/internal/httpadapter"
 	"github.com/aedobrynin/soa-hw/core/internal/service"
 )
@@ -21,7 +22,10 @@ const (
 	DefaultAccessTokenDuration  = 1 * time.Minute
 	DefaultRefreshTokenDuration = 1 * time.Hour
 	DefaultDSN                  = "dsn://"
-	DefaultMigrationsDir        = "file://migrations/auth"
+	DefaultMigrationsDir        = "file://postgresql/core/migrations/"
+	DefaultPostsAddr            = "posts_service:8080"
+	DefaultPostsTimeout         = 5 * time.Second
+	DefaultPostsRetriesCount    = 3
 )
 
 type AppConfig struct {
@@ -39,7 +43,8 @@ type Config struct {
 	Database DatabaseConfig     `yaml:"database"`
 	HTTP     httpadapter.Config `yaml:"http"`
 
-	Auth service.AuthConfig `yaml:"auth"`
+	Auth  service.AuthConfig            `yaml:"auth"`
+	Posts postsclient.PostsClientConfig `yaml:"posts_client"`
 }
 
 func NewConfig(fileName string) (*Config, error) {
@@ -66,6 +71,11 @@ func NewConfig(fileName string) (*Config, error) {
 			SigningKey:           DefaultSigningKey,
 			AccessTokenDuration:  DefaultAccessTokenDuration,
 			RefreshTokenDuration: DefaultRefreshTokenDuration,
+		},
+		Posts: postsclient.PostsClientConfig{
+			Addr:         DefaultPostsAddr,
+			Timeout:      DefaultPostsTimeout,
+			RetriesCount: DefaultPostsRetriesCount,
 		},
 	}
 

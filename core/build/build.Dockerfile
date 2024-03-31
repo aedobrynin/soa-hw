@@ -16,3 +16,4 @@ WORKDIR /app/cmd/core
 RUN go build -o main
 
 # TODO: run oapi-codegen here
+# TODO: run posts-client-generate here

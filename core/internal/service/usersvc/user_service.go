@@ -7,7 +7,7 @@ import (
 	"github.com/aedobrynin/soa-hw/core/internal/repo"
 	"github.com/aedobrynin/soa-hw/core/internal/service"
 
-	"github.com/gofrs/uuid"
+	"github.com/google/uuid"
 )
 
 type userSvc struct {

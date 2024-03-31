@@ -6,7 +6,7 @@ import (
 	"github.com/aedobrynin/soa-hw/core/internal/model"
 	"github.com/aedobrynin/soa-hw/core/internal/repo"
 
-	"github.com/gofrs/uuid"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
 )
 

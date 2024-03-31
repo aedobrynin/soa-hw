@@ -5,15 +5,15 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
+
 	"github.com/aedobrynin/soa-hw/core/internal/model"
 	"github.com/aedobrynin/soa-hw/core/internal/repo"
 	"github.com/aedobrynin/soa-hw/core/internal/repo/repomock"
 	"github.com/aedobrynin/soa-hw/core/internal/service"
 	"github.com/aedobrynin/soa-hw/core/internal/service/authsvc"
-
-	"github.com/gofrs/uuid"
-	"github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/require"
 )
 
 func TestLoginHappyPath(t *testing.T) {
@@ -30,7 +30,7 @@ func TestLoginHappyPath(t *testing.T) {
 		mock.MatchedBy(func(ctx context.Context) bool { return true }),
 		login,
 		password,
-	).Return(&model.User{Id: uuid.Must(uuid.NewV4()), Login: login, HashedPassword: []byte("hashed")}, nil).Once()
+	).Return(&model.User{Id: uuid.New(), Login: login, HashedPassword: []byte("hashed")}, nil).Once()
 
 	config := &service.AuthConfig{
 		SigningKey:           "signingKey",
@@ -104,7 +104,7 @@ func TestLoginWrongPassword(t *testing.T) {
 func TestTokensTTL(t *testing.T) {
 	ctx := context.Background()
 
-	userId := uuid.Must(uuid.NewV4())
+	userId := uuid.New()
 
 	userRepo := repomock.NewUser()
 	userRepo.On(

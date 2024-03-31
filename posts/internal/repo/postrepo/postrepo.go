@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/gofrs/uuid"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"go.uber.org/zap"
@@ -19,7 +19,7 @@ type postRepo struct {
 }
 
 func generatePostId() uuid.UUID {
-	return uuid.Must(uuid.NewV4())
+	return uuid.New()
 }
 
 func (r *postRepo) conn(ctx context.Context) Conn {

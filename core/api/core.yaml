@@ -203,6 +203,148 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorMessage'
 
+  /v1/posts/create:
+    post:
+      description: create new post
+      parameters:
+        # TODO: use refresh token too
+        - in: cookie
+          name: X_SESSION
+          schema:
+            type: string
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+                  minLength: 1
+              required:
+                - content
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unathorized
+        '422':
+          description: content didn't meet the requirements
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+
+  /v1/posts/retrieve:
+    post:
+      description: retrieve post
+      parameters:
+        - in: query
+          name: post_id
+          schema:
+            type: string
+            format: uuid
+          required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        '404':
+          description: Post not found
+        '422':
+          description: content didn't meet the requirements
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+
+  /v1/posts/edit:
+    post:
+      description: edit post content
+      parameters:
+        # TODO: use refresh token too
+        - in: cookie
+          name: X_SESSION
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: post_id
+          schema:
+            type: string
+            format: uuid
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                new_content:
+                  type: string
+                  minLength: 1
+              required:
+                - new_content
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unathorized
+        '403':
+          description: Forbidden # Only author of the post can edit it
+        '404':
+          description: Post not found
+        '422':
+          description: new_content didn't meet the requirements
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+
+  /v1/posts/delete:
+    post:
+      description: delete post
+      parameters:
+        # TODO: use refresh token too
+        - in: cookie
+          name: X_SESSION
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: post_id
+          schema:
+            type: string
+            format: uuid
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                new_content:
+                  type: string
+                  minLength: 1
+              required:
+                - new_content
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unathorized
+        '403':
+          description: Forbidden # Only author of the post can delete it
+        '404':
+          description: Post not found
+
 components:
   schemas:
     ErrorMessage:
@@ -212,3 +354,15 @@ components:
           type: string
       required:
         - error
+
+    Post:
+      type: object
+      properties:
+        author_id:
+          type: string
+          format: uuid
+        content:
+          type: string
+      required:
+        - author_id
+        - content

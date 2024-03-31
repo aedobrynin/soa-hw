@@ -9,25 +9,20 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/jackc/pgx/v4/pgxpool"
-
-	"github.com/aedobrynin/soa-hw/core/internal/httpadapter"
-	"github.com/aedobrynin/soa-hw/core/internal/repo/userrepo"
-	"github.com/aedobrynin/soa-hw/core/internal/service"
-	"github.com/aedobrynin/soa-hw/core/internal/service/authsvc"
-	"github.com/aedobrynin/soa-hw/core/internal/service/usersvc"
-
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/jackc/pgx/v4/pgxpool"
+
+	"github.com/aedobrynin/soa-hw/core/internal/clients/postsclient"
+	"github.com/aedobrynin/soa-hw/core/internal/httpadapter"
+	"github.com/aedobrynin/soa-hw/core/internal/repo/userrepo"
+	"github.com/aedobrynin/soa-hw/core/internal/service/authsvc"
+	"github.com/aedobrynin/soa-hw/core/internal/service/usersvc"
 )
 
 type app struct {
-	config *Config
-
-	authSerice  service.Auth
-	userService service.User
-
+	config      *Config
 	httpAdapter httpadapter.Adapter
 }
 
@@ -66,11 +61,11 @@ func New(config *Config) (App, error) {
 	authService := authsvc.New(&config.Auth, userRepo)
 	userService := usersvc.New(userRepo)
 
+	postsClient, err := postsclient.New(context.Background(), &config.Posts)
+
 	a := &app{
 		config:      config,
-		authSerice:  authService,
-		userService: userService,
-		httpAdapter: httpadapter.NewAdapter(&config.HTTP, authService, userService),
+		httpAdapter: httpadapter.NewAdapter(&config.HTTP, authService, userService, postsClient),
 	}
 
 	return a, nil

@@ -4,17 +4,15 @@ import (
 	"context"
 	"errors"
 
-	"github.com/gofrs/uuid"
+	"github.com/google/uuid"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/aedobrynin/soa-hw/core/internal/service"
-
-	"github.com/aedobrynin/soa-hw/core/internal/repo"
-
 	"github.com/aedobrynin/soa-hw/core/internal/model"
+	"github.com/aedobrynin/soa-hw/core/internal/repo"
+	"github.com/aedobrynin/soa-hw/core/internal/service"
 )
 
 const (
@@ -26,7 +24,7 @@ type userRepo struct {
 }
 
 func generateUserId() uuid.UUID {
-	return uuid.Must(uuid.NewV4())
+	return uuid.New()
 }
 
 func (r *userRepo) conn(ctx context.Context) Conn {

@@ -1,0 +1,3 @@
+package postsclient
+
+// TODO: tests

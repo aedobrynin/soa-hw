@@ -1,14 +1,11 @@
 package grpcadapter
 
 import (
-	"context"
 	"fmt"
 	"net"
 
-	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/recovery"
 	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -28,14 +25,6 @@ func New(
 	post service.Post,
 	config *GRPCConfig,
 ) *Adapter {
-	loggingOpts := []logging.Option{
-		logging.WithLogOnEvents(
-			logging.StartCall, logging.FinishCall,
-			logging.PayloadReceived, logging.PayloadSent,
-		),
-		// Add any other option (check functions starting with logging.With).
-	}
-
 	recoveryOpts := []recovery.Option{
 		recovery.WithRecoveryHandler(func(p interface{}) (err error) {
 			// TODO: log panic
@@ -47,7 +36,6 @@ func New(
 
 	gRPCServer := grpc.NewServer(grpc.ChainUnaryInterceptor(
 		recovery.UnaryServerInterceptor(recoveryOpts...),
-		logging.UnaryServerInterceptor(InterceptorLogger(logger), loggingOpts...),
 	))
 
 	postgrpc.Register(gRPCServer, post)
@@ -57,24 +45,6 @@ func New(
 		gRPCServer: gRPCServer,
 		config:     config,
 	}
-}
-
-func InterceptorLogger(l *zap.Logger) logging.Logger {
-	return logging.LoggerFunc(func(ctx context.Context, lvl logging.Level, msg string, fields ...any) {
-		var level zapcore.Level
-		switch lvl {
-		case logging.LevelError:
-			level = zapcore.ErrorLevel
-		case logging.LevelWarn:
-			level = zapcore.WarnLevel
-		case logging.LevelInfo:
-			level = zapcore.InfoLevel
-		case logging.LevelDebug:
-			level = zapcore.DebugLevel
-		}
-		l.Log(level, msg)
-		// TODO: fields
-	})
 }
 
 func (a *Adapter) MustRun() {

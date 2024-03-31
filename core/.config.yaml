@@ -16,3 +16,7 @@ auth:
   signing_key: aboba
   access_token_duration: 30m
   refresh_token_duration: 72h
+posts_client:
+  address: posts_service:8080
+  timeout: 5s
+  retries_count: 3

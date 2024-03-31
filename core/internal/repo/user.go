@@ -5,7 +5,7 @@ import (
 
 	"github.com/aedobrynin/soa-hw/core/internal/model"
 
-	"github.com/gofrs/uuid"
+	"github.com/google/uuid"
 )
 
 type User interface {

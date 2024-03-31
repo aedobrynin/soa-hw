@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/gofrs/uuid"
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 
 	"github.com/aedobrynin/soa-hw/posts/internal/model"
@@ -25,7 +25,13 @@ func (s *postSvc) AddPost(ctx context.Context, authorId uuid.UUID, content strin
 		return uuid.Nil, service.ErrContentIsEmpty
 	}
 
-	return s.repo.AddPost(ctx, authorId, content)
+	postId, err := s.repo.AddPost(ctx, authorId, content)
+	if err != nil {
+		s.logger.Sugar().Infof("Couldn't create post: %s", err)
+	} else {
+		s.logger.Sugar().Infof("Created post with id=%s", postId)
+	}
+	return postId, err
 }
 
 func (s *postSvc) EditPost(ctx context.Context, postId uuid.UUID, editorId uuid.UUID, newContent string) error {

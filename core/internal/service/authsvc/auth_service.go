@@ -10,8 +10,8 @@ import (
 	"github.com/aedobrynin/soa-hw/core/internal/repo"
 	"github.com/aedobrynin/soa-hw/core/internal/service"
 
-	"github.com/gofrs/uuid"
 	"github.com/golang-jwt/jwt/v4"
+	"github.com/google/uuid"
 )
 
 type Claims struct {

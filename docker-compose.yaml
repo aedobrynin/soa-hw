@@ -15,14 +15,15 @@ services:
         condition: service_completed_successfully
       core_postgres:
         condition: service_healthy
+      # TODO: myb it's bad?
+      posts_service:
+        condition: service_started
     ports:
       - "3000:3000"
 
   core_postgres:
     image: postgres
     restart: always
-    ports:
-      - 5432:5432
     environment:
       POSTGRES_DB: core
       POSTGRES_USER: postgres
@@ -54,8 +55,6 @@ services:
   posts_postgres:
     image: postgres
     restart: always
-    ports:
-      - 5432:5432
     environment:
       POSTGRES_DB: posts
       POSTGRES_USER: postgres

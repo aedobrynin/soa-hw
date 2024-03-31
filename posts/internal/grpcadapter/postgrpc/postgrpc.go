@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 
-	"github.com/gofrs/uuid"
 	"github.com/golang/protobuf/ptypes/empty"
+	"github.com/google/uuid"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -27,7 +27,7 @@ func (s *serverAPI) CreatePost(
 	ctx context.Context,
 	request *gen.CreatePostRequest,
 ) (*gen.CreatePostResponse, error) {
-	authorId, err := uuid.FromString(request.AuthorId)
+	authorId, err := uuid.Parse(request.AuthorId)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, "author_id should be valid uuid")
 	}
@@ -45,12 +45,12 @@ func (s *serverAPI) CreatePost(
 }
 
 func (s *serverAPI) EditPost(ctx context.Context, request *gen.EditPostRequest) (*empty.Empty, error) {
-	postId, err := uuid.FromString(request.PostId)
+	postId, err := uuid.Parse(request.PostId)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, "post_id should be valid uuid")
 	}
 
-	editorId, err := uuid.FromString(request.EditorId)
+	editorId, err := uuid.Parse(request.EditorId)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, "editor_id should be valid uuid")
 	}
@@ -72,12 +72,12 @@ func (s *serverAPI) EditPost(ctx context.Context, request *gen.EditPostRequest) 
 }
 
 func (s *serverAPI) DeletePost(ctx context.Context, request *gen.DeletePostRequest) (*empty.Empty, error) {
-	postId, err := uuid.FromString(request.PostId)
+	postId, err := uuid.Parse(request.PostId)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, "post_id should be valid uuid")
 	}
 
-	deleterId, err := uuid.FromString(request.DeleterId)
+	deleterId, err := uuid.Parse(request.DeleterId)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, "deleter_id should be valid uuid")
 	}
@@ -96,7 +96,7 @@ func (s *serverAPI) DeletePost(ctx context.Context, request *gen.DeletePostReque
 }
 
 func (s *serverAPI) GetPost(ctx context.Context, request *gen.GetPostRequest) (*gen.Post, error) {
-	postId, err := uuid.FromString(request.PostId)
+	postId, err := uuid.Parse(request.PostId)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, "post_id should be valid uuid")
 	}

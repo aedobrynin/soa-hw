@@ -12,11 +12,18 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/oapi-codegen/runtime"
 	strictnethttp "github.com/oapi-codegen/runtime/strictmiddleware/nethttp"
+	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
 // ErrorMessage defines model for ErrorMessage.
 type ErrorMessage struct {
 	Error string `json:"error"`
+}
+
+// Post defines model for Post.
+type Post struct {
+	AuthorId openapi_types.UUID `json:"author_id"`
+	Content  string             `json:"content"`
 }
 
 // PostV1AuthJSONBody defines parameters for PostV1Auth.
@@ -65,6 +72,43 @@ type PostV1ChangeSurnameParams struct {
 	XSESSION string `form:"X_SESSION" json:"X_SESSION"`
 }
 
+// PostV1PostsCreateJSONBody defines parameters for PostV1PostsCreate.
+type PostV1PostsCreateJSONBody struct {
+	Content string `json:"content"`
+}
+
+// PostV1PostsCreateParams defines parameters for PostV1PostsCreate.
+type PostV1PostsCreateParams struct {
+	XSESSION string `form:"X_SESSION" json:"X_SESSION"`
+}
+
+// PostV1PostsDeleteJSONBody defines parameters for PostV1PostsDelete.
+type PostV1PostsDeleteJSONBody struct {
+	NewContent string `json:"new_content"`
+}
+
+// PostV1PostsDeleteParams defines parameters for PostV1PostsDelete.
+type PostV1PostsDeleteParams struct {
+	PostId   openapi_types.UUID `form:"post_id" json:"post_id"`
+	XSESSION string             `form:"X_SESSION" json:"X_SESSION"`
+}
+
+// PostV1PostsEditJSONBody defines parameters for PostV1PostsEdit.
+type PostV1PostsEditJSONBody struct {
+	NewContent string `json:"new_content"`
+}
+
+// PostV1PostsEditParams defines parameters for PostV1PostsEdit.
+type PostV1PostsEditParams struct {
+	PostId   openapi_types.UUID `form:"post_id" json:"post_id"`
+	XSESSION string             `form:"X_SESSION" json:"X_SESSION"`
+}
+
+// PostV1PostsRetrieveParams defines parameters for PostV1PostsRetrieve.
+type PostV1PostsRetrieveParams struct {
+	PostId openapi_types.UUID `form:"post_id" json:"post_id"`
+}
+
 // PostV1SignUpJSONBody defines parameters for PostV1SignUp.
 type PostV1SignUpJSONBody struct {
 	Login    string `json:"login"`
@@ -86,6 +130,15 @@ type PostV1ChangePhoneJSONRequestBody PostV1ChangePhoneJSONBody
 // PostV1ChangeSurnameJSONRequestBody defines body for PostV1ChangeSurname for application/json ContentType.
 type PostV1ChangeSurnameJSONRequestBody PostV1ChangeSurnameJSONBody
 
+// PostV1PostsCreateJSONRequestBody defines body for PostV1PostsCreate for application/json ContentType.
+type PostV1PostsCreateJSONRequestBody PostV1PostsCreateJSONBody
+
+// PostV1PostsDeleteJSONRequestBody defines body for PostV1PostsDelete for application/json ContentType.
+type PostV1PostsDeleteJSONRequestBody PostV1PostsDeleteJSONBody
+
+// PostV1PostsEditJSONRequestBody defines body for PostV1PostsEdit for application/json ContentType.
+type PostV1PostsEditJSONRequestBody PostV1PostsEditJSONBody
+
 // PostV1SignUpJSONRequestBody defines body for PostV1SignUp for application/json ContentType.
 type PostV1SignUpJSONRequestBody PostV1SignUpJSONBody
 
@@ -106,6 +159,18 @@ type ServerInterface interface {
 
 	// (POST /v1/change_surname)
 	PostV1ChangeSurname(w http.ResponseWriter, r *http.Request, params PostV1ChangeSurnameParams)
+
+	// (POST /v1/posts/create)
+	PostV1PostsCreate(w http.ResponseWriter, r *http.Request, params PostV1PostsCreateParams)
+
+	// (POST /v1/posts/delete)
+	PostV1PostsDelete(w http.ResponseWriter, r *http.Request, params PostV1PostsDeleteParams)
+
+	// (POST /v1/posts/edit)
+	PostV1PostsEdit(w http.ResponseWriter, r *http.Request, params PostV1PostsEditParams)
+
+	// (POST /v1/posts/retrieve)
+	PostV1PostsRetrieve(w http.ResponseWriter, r *http.Request, params PostV1PostsRetrieveParams)
 	// Register new user
 	// (POST /v1/sign_up)
 	PostV1SignUp(w http.ResponseWriter, r *http.Request)
@@ -138,6 +203,26 @@ func (_ Unimplemented) PostV1ChangePhone(w http.ResponseWriter, r *http.Request,
 
 // (POST /v1/change_surname)
 func (_ Unimplemented) PostV1ChangeSurname(w http.ResponseWriter, r *http.Request, params PostV1ChangeSurnameParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// (POST /v1/posts/create)
+func (_ Unimplemented) PostV1PostsCreate(w http.ResponseWriter, r *http.Request, params PostV1PostsCreateParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// (POST /v1/posts/delete)
+func (_ Unimplemented) PostV1PostsDelete(w http.ResponseWriter, r *http.Request, params PostV1PostsDeleteParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// (POST /v1/posts/edit)
+func (_ Unimplemented) PostV1PostsEdit(w http.ResponseWriter, r *http.Request, params PostV1PostsEditParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// (POST /v1/posts/retrieve)
+func (_ Unimplemented) PostV1PostsRetrieve(w http.ResponseWriter, r *http.Request, params PostV1PostsRetrieveParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -315,6 +400,179 @@ func (siw *ServerInterfaceWrapper) PostV1ChangeSurname(w http.ResponseWriter, r 
 	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
+// PostV1PostsCreate operation middleware
+func (siw *ServerInterfaceWrapper) PostV1PostsCreate(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params PostV1PostsCreateParams
+
+	var cookie *http.Cookie
+
+	if cookie, err = r.Cookie("X_SESSION"); err == nil {
+		var value string
+		err = runtime.BindStyledParameter("simple", true, "X_SESSION", cookie.Value, &value)
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X_SESSION", Err: err})
+			return
+		}
+		params.XSESSION = value
+
+	} else {
+		siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "X_SESSION"})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.PostV1PostsCreate(w, r, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// PostV1PostsDelete operation middleware
+func (siw *ServerInterfaceWrapper) PostV1PostsDelete(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params PostV1PostsDeleteParams
+
+	// ------------- Required query parameter "post_id" -------------
+
+	if paramValue := r.URL.Query().Get("post_id"); paramValue != "" {
+
+	} else {
+		siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "post_id"})
+		return
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "post_id", r.URL.Query(), &params.PostId)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "post_id", Err: err})
+		return
+	}
+
+	var cookie *http.Cookie
+
+	if cookie, err = r.Cookie("X_SESSION"); err == nil {
+		var value string
+		err = runtime.BindStyledParameter("simple", true, "X_SESSION", cookie.Value, &value)
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X_SESSION", Err: err})
+			return
+		}
+		params.XSESSION = value
+
+	} else {
+		siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "X_SESSION"})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.PostV1PostsDelete(w, r, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// PostV1PostsEdit operation middleware
+func (siw *ServerInterfaceWrapper) PostV1PostsEdit(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params PostV1PostsEditParams
+
+	// ------------- Required query parameter "post_id" -------------
+
+	if paramValue := r.URL.Query().Get("post_id"); paramValue != "" {
+
+	} else {
+		siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "post_id"})
+		return
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "post_id", r.URL.Query(), &params.PostId)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "post_id", Err: err})
+		return
+	}
+
+	var cookie *http.Cookie
+
+	if cookie, err = r.Cookie("X_SESSION"); err == nil {
+		var value string
+		err = runtime.BindStyledParameter("simple", true, "X_SESSION", cookie.Value, &value)
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X_SESSION", Err: err})
+			return
+		}
+		params.XSESSION = value
+
+	} else {
+		siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "X_SESSION"})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.PostV1PostsEdit(w, r, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// PostV1PostsRetrieve operation middleware
+func (siw *ServerInterfaceWrapper) PostV1PostsRetrieve(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params PostV1PostsRetrieveParams
+
+	// ------------- Required query parameter "post_id" -------------
+
+	if paramValue := r.URL.Query().Get("post_id"); paramValue != "" {
+
+	} else {
+		siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "post_id"})
+		return
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "post_id", r.URL.Query(), &params.PostId)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "post_id", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.PostV1PostsRetrieve(w, r, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
 // PostV1SignUp operation middleware
 func (siw *ServerInterfaceWrapper) PostV1SignUp(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -457,6 +715,18 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	})
 	r.Group(func(r chi.Router) {
 		r.Post(options.BaseURL+"/v1/change_surname", wrapper.PostV1ChangeSurname)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/v1/posts/create", wrapper.PostV1PostsCreate)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/v1/posts/delete", wrapper.PostV1PostsDelete)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/v1/posts/edit", wrapper.PostV1PostsEdit)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/v1/posts/retrieve", wrapper.PostV1PostsRetrieve)
 	})
 	r.Group(func(r chi.Router) {
 		r.Post(options.BaseURL+"/v1/sign_up", wrapper.PostV1SignUp)
@@ -632,6 +902,165 @@ func (response PostV1ChangeSurname422JSONResponse) VisitPostV1ChangeSurnameRespo
 	return json.NewEncoder(w).Encode(response)
 }
 
+type PostV1PostsCreateRequestObject struct {
+	Params PostV1PostsCreateParams
+	Body   *PostV1PostsCreateJSONRequestBody
+}
+
+type PostV1PostsCreateResponseObject interface {
+	VisitPostV1PostsCreateResponse(w http.ResponseWriter) error
+}
+
+type PostV1PostsCreate200Response struct {
+}
+
+func (response PostV1PostsCreate200Response) VisitPostV1PostsCreateResponse(w http.ResponseWriter) error {
+	w.WriteHeader(200)
+	return nil
+}
+
+type PostV1PostsCreate401Response struct {
+}
+
+func (response PostV1PostsCreate401Response) VisitPostV1PostsCreateResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type PostV1PostsCreate422JSONResponse ErrorMessage
+
+func (response PostV1PostsCreate422JSONResponse) VisitPostV1PostsCreateResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(422)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostV1PostsDeleteRequestObject struct {
+	Params PostV1PostsDeleteParams
+	Body   *PostV1PostsDeleteJSONRequestBody
+}
+
+type PostV1PostsDeleteResponseObject interface {
+	VisitPostV1PostsDeleteResponse(w http.ResponseWriter) error
+}
+
+type PostV1PostsDelete200Response struct {
+}
+
+func (response PostV1PostsDelete200Response) VisitPostV1PostsDeleteResponse(w http.ResponseWriter) error {
+	w.WriteHeader(200)
+	return nil
+}
+
+type PostV1PostsDelete401Response struct {
+}
+
+func (response PostV1PostsDelete401Response) VisitPostV1PostsDeleteResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type PostV1PostsDelete403Response struct {
+}
+
+func (response PostV1PostsDelete403Response) VisitPostV1PostsDeleteResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type PostV1PostsDelete404Response struct {
+}
+
+func (response PostV1PostsDelete404Response) VisitPostV1PostsDeleteResponse(w http.ResponseWriter) error {
+	w.WriteHeader(404)
+	return nil
+}
+
+type PostV1PostsEditRequestObject struct {
+	Params PostV1PostsEditParams
+	Body   *PostV1PostsEditJSONRequestBody
+}
+
+type PostV1PostsEditResponseObject interface {
+	VisitPostV1PostsEditResponse(w http.ResponseWriter) error
+}
+
+type PostV1PostsEdit200Response struct {
+}
+
+func (response PostV1PostsEdit200Response) VisitPostV1PostsEditResponse(w http.ResponseWriter) error {
+	w.WriteHeader(200)
+	return nil
+}
+
+type PostV1PostsEdit401Response struct {
+}
+
+func (response PostV1PostsEdit401Response) VisitPostV1PostsEditResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type PostV1PostsEdit403Response struct {
+}
+
+func (response PostV1PostsEdit403Response) VisitPostV1PostsEditResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type PostV1PostsEdit404Response struct {
+}
+
+func (response PostV1PostsEdit404Response) VisitPostV1PostsEditResponse(w http.ResponseWriter) error {
+	w.WriteHeader(404)
+	return nil
+}
+
+type PostV1PostsEdit422JSONResponse ErrorMessage
+
+func (response PostV1PostsEdit422JSONResponse) VisitPostV1PostsEditResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(422)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostV1PostsRetrieveRequestObject struct {
+	Params PostV1PostsRetrieveParams
+}
+
+type PostV1PostsRetrieveResponseObject interface {
+	VisitPostV1PostsRetrieveResponse(w http.ResponseWriter) error
+}
+
+type PostV1PostsRetrieve200JSONResponse Post
+
+func (response PostV1PostsRetrieve200JSONResponse) VisitPostV1PostsRetrieveResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostV1PostsRetrieve404Response struct {
+}
+
+func (response PostV1PostsRetrieve404Response) VisitPostV1PostsRetrieveResponse(w http.ResponseWriter) error {
+	w.WriteHeader(404)
+	return nil
+}
+
+type PostV1PostsRetrieve422JSONResponse ErrorMessage
+
+func (response PostV1PostsRetrieve422JSONResponse) VisitPostV1PostsRetrieveResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(422)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type PostV1SignUpRequestObject struct {
 	Body *PostV1SignUpJSONRequestBody
 }
@@ -674,6 +1103,18 @@ type StrictServerInterface interface {
 
 	// (POST /v1/change_surname)
 	PostV1ChangeSurname(ctx context.Context, request PostV1ChangeSurnameRequestObject) (PostV1ChangeSurnameResponseObject, error)
+
+	// (POST /v1/posts/create)
+	PostV1PostsCreate(ctx context.Context, request PostV1PostsCreateRequestObject) (PostV1PostsCreateResponseObject, error)
+
+	// (POST /v1/posts/delete)
+	PostV1PostsDelete(ctx context.Context, request PostV1PostsDeleteRequestObject) (PostV1PostsDeleteResponseObject, error)
+
+	// (POST /v1/posts/edit)
+	PostV1PostsEdit(ctx context.Context, request PostV1PostsEditRequestObject) (PostV1PostsEditResponseObject, error)
+
+	// (POST /v1/posts/retrieve)
+	PostV1PostsRetrieve(ctx context.Context, request PostV1PostsRetrieveRequestObject) (PostV1PostsRetrieveResponseObject, error)
 	// Register new user
 	// (POST /v1/sign_up)
 	PostV1SignUp(ctx context.Context, request PostV1SignUpRequestObject) (PostV1SignUpResponseObject, error)
@@ -864,6 +1305,131 @@ func (sh *strictHandler) PostV1ChangeSurname(w http.ResponseWriter, r *http.Requ
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
 	} else if validResponse, ok := response.(PostV1ChangeSurnameResponseObject); ok {
 		if err := validResponse.VisitPostV1ChangeSurnameResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostV1PostsCreate operation middleware
+func (sh *strictHandler) PostV1PostsCreate(w http.ResponseWriter, r *http.Request, params PostV1PostsCreateParams) {
+	var request PostV1PostsCreateRequestObject
+
+	request.Params = params
+
+	var body PostV1PostsCreateJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.PostV1PostsCreate(ctx, request.(PostV1PostsCreateRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostV1PostsCreate")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(PostV1PostsCreateResponseObject); ok {
+		if err := validResponse.VisitPostV1PostsCreateResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostV1PostsDelete operation middleware
+func (sh *strictHandler) PostV1PostsDelete(w http.ResponseWriter, r *http.Request, params PostV1PostsDeleteParams) {
+	var request PostV1PostsDeleteRequestObject
+
+	request.Params = params
+
+	var body PostV1PostsDeleteJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.PostV1PostsDelete(ctx, request.(PostV1PostsDeleteRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostV1PostsDelete")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(PostV1PostsDeleteResponseObject); ok {
+		if err := validResponse.VisitPostV1PostsDeleteResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostV1PostsEdit operation middleware
+func (sh *strictHandler) PostV1PostsEdit(w http.ResponseWriter, r *http.Request, params PostV1PostsEditParams) {
+	var request PostV1PostsEditRequestObject
+
+	request.Params = params
+
+	var body PostV1PostsEditJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.PostV1PostsEdit(ctx, request.(PostV1PostsEditRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostV1PostsEdit")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(PostV1PostsEditResponseObject); ok {
+		if err := validResponse.VisitPostV1PostsEditResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostV1PostsRetrieve operation middleware
+func (sh *strictHandler) PostV1PostsRetrieve(w http.ResponseWriter, r *http.Request, params PostV1PostsRetrieveParams) {
+	var request PostV1PostsRetrieveRequestObject
+
+	request.Params = params
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.PostV1PostsRetrieve(ctx, request.(PostV1PostsRetrieveRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostV1PostsRetrieve")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(PostV1PostsRetrieveResponseObject); ok {
+		if err := validResponse.VisitPostV1PostsRetrieveResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {

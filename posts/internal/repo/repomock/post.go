@@ -3,7 +3,7 @@ package repomock
 import (
 	"context"
 
-	"github.com/gofrs/uuid"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
 
 	"github.com/aedobrynin/soa-hw/posts/internal/model"

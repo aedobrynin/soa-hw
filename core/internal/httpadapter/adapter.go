@@ -7,10 +7,12 @@ import (
 	"net"
 	"net/http"
 
+	"github.com/aedobrynin/soa-hw/core/internal/clients"
 	"github.com/aedobrynin/soa-hw/core/internal/httpadapter/codegen"
 	"github.com/aedobrynin/soa-hw/core/internal/logger"
 	"github.com/aedobrynin/soa-hw/core/internal/model"
 	"github.com/aedobrynin/soa-hw/core/internal/service"
+	"github.com/google/uuid"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/juju/zaputil/zapctx"
@@ -22,6 +24,8 @@ type adapter struct {
 
 	authService service.Auth
 	userService service.User
+
+	postsClient clients.PostsClient
 
 	server *http.Server
 
@@ -185,6 +189,111 @@ func (a *adapter) PostV1ChangePhone(
 	return codegen.PostV1ChangePhone200Response{}, nil
 }
 
+// (POST /v1/posts/create)
+func (a *adapter) PostV1PostsCreate(
+	ctx context.Context,
+	request codegen.PostV1PostsCreateRequestObject,
+) (codegen.PostV1PostsCreateResponseObject, error) {
+	// TODO: use refresh token too
+	// TODO: make it helper function
+	_, userId, err := a.authService.ValidateAndRefresh(
+		ctx,
+		&model.TokenPair{AccessToken: request.Params.XSESSION, RefreshToken: ""},
+	)
+	switch {
+	case errors.Is(err, service.ErrUnsupportedClaims) || errors.Is(err, service.ErrUnauthorized):
+		return codegen.PostV1PostsCreate401Response{}, nil
+	case err != nil:
+		return nil, err
+	}
+
+	_, err = a.postsClient.CreatePost(ctx, *userId, request.Body.Content)
+	if errors.Is(err, clients.ErrContentIsEmpty) {
+		return codegen.PostV1PostsCreate422JSONResponse(codegen.ErrorMessage{Error: err.Error()}), nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return codegen.PostV1PostsCreate200Response{}, nil
+}
+
+// (POST /v1/posts/delete)
+func (a *adapter) PostV1PostsDelete(
+	ctx context.Context,
+	request codegen.PostV1PostsDeleteRequestObject,
+) (codegen.PostV1PostsDeleteResponseObject, error) {
+	// TODO: use refresh token too
+	// TODO: make it helper function
+	_, userId, err := a.authService.ValidateAndRefresh(
+		ctx,
+		&model.TokenPair{AccessToken: request.Params.XSESSION, RefreshToken: ""},
+	)
+	switch {
+	case errors.Is(err, service.ErrUnsupportedClaims) || errors.Is(err, service.ErrUnauthorized):
+		return codegen.PostV1PostsDelete401Response{}, nil
+	case err != nil:
+		return nil, err
+	}
+
+	err = a.postsClient.DeletePost(ctx, request.Params.PostId, *userId)
+	if errors.Is(err, clients.ErrPostNotFound) {
+		return codegen.PostV1PostsDelete404Response{}, nil
+	}
+	if errors.Is(err, clients.ErrInsufficientPermissions) {
+		return codegen.PostV1PostsDelete403Response{}, nil
+	}
+	return codegen.PostV1PostsDelete200Response{}, nil
+}
+
+// (POST /v1/posts/edit)
+func (a *adapter) PostV1PostsEdit(
+	ctx context.Context,
+	request codegen.PostV1PostsEditRequestObject,
+) (codegen.PostV1PostsEditResponseObject, error) {
+	// TODO: use refresh token too
+	// TODO: make it helper function
+	_, userId, err := a.authService.ValidateAndRefresh(
+		ctx,
+		&model.TokenPair{AccessToken: request.Params.XSESSION, RefreshToken: ""},
+	)
+	switch {
+	case errors.Is(err, service.ErrUnsupportedClaims) || errors.Is(err, service.ErrUnauthorized):
+		return codegen.PostV1PostsEdit401Response{}, nil
+	case err != nil:
+		return nil, err
+	}
+
+	err = a.postsClient.EditPost(ctx, request.Params.PostId, *userId, request.Body.NewContent)
+	if errors.Is(err, clients.ErrPostNotFound) {
+		return codegen.PostV1PostsEdit404Response{}, nil
+	}
+	if errors.Is(err, clients.ErrContentIsEmpty) {
+		return codegen.PostV1PostsEdit422JSONResponse(codegen.ErrorMessage{Error: err.Error()}), nil
+	}
+	if errors.Is(err, clients.ErrInsufficientPermissions) {
+		return codegen.PostV1PostsEdit403Response{}, nil
+	}
+	return codegen.PostV1PostsEdit200Response{}, nil
+}
+
+// (POST /v1/posts/retrieve)
+func (a *adapter) PostV1PostsRetrieve(
+	ctx context.Context,
+	request codegen.PostV1PostsRetrieveRequestObject,
+) (codegen.PostV1PostsRetrieveResponseObject, error) {
+	post, err := a.postsClient.GetPost(ctx, request.Params.PostId)
+	if errors.Is(err, clients.ErrPostNotFound) {
+		return codegen.PostV1PostsRetrieve404Response{}, nil
+	}
+
+	authorId, err := uuid.Parse(post.AuthorId)
+	if err != nil {
+		return nil, err
+	}
+
+	return codegen.PostV1PostsRetrieve200JSONResponse(codegen.Post{AuthorId: authorId, Content: post.Content}), nil
+}
+
 func (a *adapter) Serve() error {
 	logger, err := logger.GetLogger(true)
 	if err != nil {
@@ -232,10 +341,12 @@ func (a *adapter) Shutdown(ctx context.Context) {
 func NewAdapter(
 	config *Config,
 	authService service.Auth,
-	userService service.User) Adapter {
+	userService service.User,
+	postsClient clients.PostsClient) Adapter {
 	return &adapter{
 		cfg:         config,
 		authService: authService,
 		userService: userService,
+		postsClient: postsClient,
 	}
 }

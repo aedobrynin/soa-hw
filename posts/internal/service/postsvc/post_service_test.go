@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/gofrs/uuid"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
@@ -20,9 +20,9 @@ func TestAddPostHappyPath(t *testing.T) {
 		t.Error(err)
 	}
 
-	authorId := uuid.Must(uuid.NewV4())
+	authorId := uuid.New()
 	content := "content"
-	expectedPostId := uuid.Must(uuid.NewV4())
+	expectedPostId := uuid.New()
 
 	postRepo := repomock.NewPost()
 	postRepo.On(
@@ -51,7 +51,7 @@ func TestAddPostEmptyContent(t *testing.T) {
 
 	ctx := context.Background()
 
-	returnedPostId, err := svc.AddPost(ctx, uuid.Must(uuid.NewV4()), "")
+	returnedPostId, err := svc.AddPost(ctx, uuid.New(), "")
 	require.Equal(t, returnedPostId, uuid.Nil)
 	require.Equal(t, err, service.ErrContentIsEmpty)
 }
