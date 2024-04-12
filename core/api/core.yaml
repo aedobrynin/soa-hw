@@ -331,18 +331,6 @@ paths:
             type: string
             format: uuid
           required: true
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                new_content:
-                  type: string
-                  minLength: 1
-              required:
-                - new_content
       responses:
         '200':
           description: OK

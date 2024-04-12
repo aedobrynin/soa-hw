@@ -82,11 +82,6 @@ type PostV1PostsCreateParams struct {
 	XSESSION string `form:"X_SESSION" json:"X_SESSION"`
 }
 
-// PostV1PostsDeleteJSONBody defines parameters for PostV1PostsDelete.
-type PostV1PostsDeleteJSONBody struct {
-	NewContent string `json:"new_content"`
-}
-
 // PostV1PostsDeleteParams defines parameters for PostV1PostsDelete.
 type PostV1PostsDeleteParams struct {
 	PostId   openapi_types.UUID `form:"post_id" json:"post_id"`
@@ -140,9 +135,6 @@ type PostV1ChangeSurnameJSONRequestBody PostV1ChangeSurnameJSONBody
 
 // PostV1PostsCreateJSONRequestBody defines body for PostV1PostsCreate for application/json ContentType.
 type PostV1PostsCreateJSONRequestBody PostV1PostsCreateJSONBody
-
-// PostV1PostsDeleteJSONRequestBody defines body for PostV1PostsDelete for application/json ContentType.
-type PostV1PostsDeleteJSONRequestBody PostV1PostsDeleteJSONBody
 
 // PostV1PostsEditJSONRequestBody defines body for PostV1PostsEdit for application/json ContentType.
 type PostV1PostsEditJSONRequestBody PostV1PostsEditJSONBody
@@ -1032,7 +1024,6 @@ func (response PostV1PostsCreate422JSONResponse) VisitPostV1PostsCreateResponse(
 
 type PostV1PostsDeleteRequestObject struct {
 	Params PostV1PostsDeleteParams
-	Body   *PostV1PostsDeleteJSONRequestBody
 }
 
 type PostV1PostsDeleteResponseObject interface {
@@ -1492,13 +1483,6 @@ func (sh *strictHandler) PostV1PostsDelete(w http.ResponseWriter, r *http.Reques
 	var request PostV1PostsDeleteRequestObject
 
 	request.Params = params
-
-	var body PostV1PostsDeleteJSONRequestBody
-	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
-		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
-		return
-	}
-	request.Body = &body
 
 	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
 		return sh.ssi.PostV1PostsDelete(ctx, request.(PostV1PostsDeleteRequestObject))
