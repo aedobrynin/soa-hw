@@ -1,0 +1,22 @@
+app:
+  debug: true
+  shutdown_timeout: 20s
+database:
+  dsn: postgresql://core_postgres:5432/core?user=postgres&password=postgres&sslmode=disable
+  migrations_dir: 'file://postgresql/core/migrations/'
+http:
+  serve_address: :3000
+  base_path: ''
+  use_tls: false
+  tls_key_file: ''
+  tls_crt_file: ''
+  access_token_cookie: 'X_SESSION'
+  refresh_token_cookie: 'X_REFRESH'
+auth:
+  signing_key: aboba
+  access_token_duration: 30m
+  refresh_token_duration: 72h
+posts_client:
+  address: posts_service:8080
+  timeout: 5s
+  retries_count: 3

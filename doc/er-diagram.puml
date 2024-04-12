@@ -23,6 +23,7 @@ entity "Post" as post {
   --
   *created_ts: uint
   *author_id: uuid <<FK>>
+  *content: text
 }
 
 

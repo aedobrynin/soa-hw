@@ -1,0 +1,68 @@
+version: "3.1"
+services:
+  core_service_build:
+    image: core_service_build:develop
+    build:
+      context: "./core"
+      dockerfile: "./build/build.Dockerfile"
+
+  core_service:
+    build:
+      context: "./core"
+      dockerfile: "./build/core.Dockerfile"
+    depends_on:
+      core_service_build:
+        condition: service_completed_successfully
+      core_postgres:
+        condition: service_healthy
+      # TODO: myb it's bad?
+      posts_service:
+        condition: service_started
+    ports:
+      - "3000:3000"
+
+  core_postgres:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_DB: core
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: "pg_isready -d $$POSTGRES_DB -U $$POSTGRES_USER"
+      interval: 3s
+      timeout: 5s
+      retries: 5
+
+  posts_service_build:
+    image: posts_service_build:develop
+    build:
+      context: "./posts"
+      dockerfile: "./build/build.Dockerfile"
+
+  posts_service:
+    build:
+      context: "./posts"
+      dockerfile: "./build/posts.Dockerfile"
+    depends_on:
+      posts_service_build:
+        condition: service_completed_successfully
+      posts_postgres:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+
+  posts_postgres:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_DB: posts
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: "pg_isready -d $$POSTGRES_DB -U $$POSTGRES_USER"
+      interval: 3s
+      timeout: 5s
+      retries: 5

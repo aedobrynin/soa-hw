@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
+package posts;
+
+option go_package = "github.com/aedobrynin/soa-hw/posts//grpcadapter/gen";
+
+service Posts {
+  rpc CreatePost(CreatePostRequest) returns (CreatePostResponse) {}
+  rpc EditPost(EditPostRequest) returns (google.protobuf.Empty) {}
+  rpc DeletePost(DeletePostRequest) returns (google.protobuf.Empty) {}
+  rpc GetPost(GetPostRequest) returns (Post) {}
+  rpc ListPosts(ListPostsRequest) returns (ListPostsResponse);
+}
+
+message Post {
+  string author_id = 1;
+  string content = 2;
+}
+
+message CreatePostRequest {
+  string author_id = 1;
+  string content = 2;
+}
+
+message CreatePostResponse { string post_id = 1; }
+
+message EditPostRequest {
+  string post_id = 1;
+  string editor_id = 2;
+  string new_content = 3;
+}
+
+message DeletePostRequest {
+  string post_id = 1;
+  string deleter_id = 2;
+}
+
+message GetPostRequest { string post_id = 1; }
+
+message ListPostsRequest {
+  uint32 page_size = 2;
+  string page_token = 3;
+}
+
+message ListPostsResponse {
+  repeated Post posts = 1;
+  string next_page_token = 2;
+}
