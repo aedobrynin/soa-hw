@@ -108,6 +108,7 @@ func (s *serverAPI) GetPost(ctx context.Context, request *gen.GetPostRequest) (*
 		return nil, status.Errorf(codes.Internal, "internal error")
 	}
 	return &gen.Post{
+		Id:       post.Id.String(),
 		AuthorId: post.AuthorId.String(),
 		Content:  post.Content,
 	}, nil
@@ -124,7 +125,10 @@ func (s *serverAPI) ListPosts(ctx context.Context, request *gen.ListPostsRequest
 
 	respPosts := make([]*gen.Post, 0, len(posts))
 	for _, post := range posts {
-		respPosts = append(respPosts, &gen.Post{AuthorId: post.AuthorId.String(), Content: post.Content})
+		respPosts = append(
+			respPosts,
+			&gen.Post{Id: post.Id.String(), AuthorId: post.AuthorId.String(), Content: post.Content},
+		)
 	}
 	return &gen.ListPostsResponse{
 		Posts:         respPosts,

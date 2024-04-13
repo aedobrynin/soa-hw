@@ -299,12 +299,18 @@ func (a *adapter) PostV1PostsRetrieve(
 		return codegen.PostV1PostsRetrieve404Response{}, nil
 	}
 
+	postId, err := uuid.Parse(post.Id)
+	if err != nil {
+		return nil, err
+	}
 	authorId, err := uuid.Parse(post.AuthorId)
 	if err != nil {
 		return nil, err
 	}
 
-	return codegen.PostV1PostsRetrieve200JSONResponse(codegen.Post{AuthorId: authorId, Content: post.Content}), nil
+	return codegen.PostV1PostsRetrieve200JSONResponse(
+		codegen.Post{Id: postId, AuthorId: authorId, Content: post.Content},
+	), nil
 }
 
 // (POST /v1/posts/list)
@@ -346,11 +352,16 @@ func (a *adapter) PostV1PostsList(
 
 	respPosts := make([]codegen.Post, 0, len(posts))
 	for _, post := range posts {
+		id, err := uuid.Parse(post.Id)
+		if err != nil {
+			return nil, err
+		}
+
 		authorId, err := uuid.Parse(post.AuthorId)
 		if err != nil {
 			return nil, err
 		}
-		respPosts = append(respPosts, codegen.Post{AuthorId: authorId, Content: post.Content})
+		respPosts = append(respPosts, codegen.Post{Id: id, AuthorId: authorId, Content: post.Content})
 	}
 	return codegen.PostV1PostsList200JSONResponse{NextPageToken: nextPageToken, Posts: respPosts}, nil
 }

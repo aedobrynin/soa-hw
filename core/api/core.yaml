@@ -401,11 +401,15 @@ components:
     Post:
       type: object
       properties:
-        author_id:
+        id:
           type: string
           format: uuid
         content:
           type: string
+        author_id:
+          type: string
+          format: uuid
       required:
-        - author_id
+        - id
         - content
+        - author_id

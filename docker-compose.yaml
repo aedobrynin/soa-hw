@@ -33,6 +33,8 @@ services:
       interval: 3s
       timeout: 5s
       retries: 5
+    volumes:
+      - ./postgres-data/core_postgres:/var/lib/postgresql/data
 
   posts_service_build:
     image: posts_service_build:develop
@@ -66,3 +68,5 @@ services:
       interval: 3s
       timeout: 5s
       retries: 5
+    volumes:
+      - ./postgres-data/posts_postgres:/var/lib/postgresql/data

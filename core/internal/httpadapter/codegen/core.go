@@ -24,6 +24,7 @@ type ErrorMessage struct {
 type Post struct {
 	AuthorId openapi_types.UUID `json:"author_id"`
 	Content  string             `json:"content"`
+	Id       openapi_types.UUID `json:"id"`
 }
 
 // PostV1AuthJSONBody defines parameters for PostV1Auth.

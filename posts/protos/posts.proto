@@ -15,8 +15,9 @@ service Posts {
 }
 
 message Post {
-  string author_id = 1;
-  string content = 2;
+  string id = 1;
+  string author_id = 2;
+  string content = 3;
 }
 
 message CreatePostRequest {
