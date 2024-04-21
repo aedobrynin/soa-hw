@@ -37,7 +37,9 @@ func (c *PostsClient) CreatePost(
 	postId, err := uuid.Parse(resp.PostId)
 	if err != nil {
 		logger := zapctx.Logger(ctx)
-		defer logger.Sync()
+		defer func() {
+			_ = logger.Sync()
+		}()
 		logger.Sugar().Errorf("couldn't parse postId %s from posts service as uuid", resp.PostId)
 		return uuid.Nil, err
 	}

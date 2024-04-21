@@ -28,7 +28,9 @@ func New(
 	recoveryOpts := []recovery.Option{
 		recovery.WithRecoveryHandler(func(p interface{}) (err error) {
 			// TODO: log panic
-			defer logger.Sync()
+			defer func() {
+				_ = logger.Sync()
+			}()
 			logger.Error("Recovered from panic")
 			return status.Errorf(codes.Internal, "internal error")
 		}),
@@ -73,7 +75,9 @@ func (a *Adapter) Run() error {
 
 // Stop stops gRPC server.
 func (a *Adapter) Stop() {
-	defer a.logger.Sync()
+	defer func() {
+		_ = a.logger.Sync()
+	}()
 	a.logger.Info("stopping gRPC server")
 	a.gRPCServer.GracefulStop()
 }

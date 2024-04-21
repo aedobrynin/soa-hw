@@ -86,7 +86,9 @@ func (r *postRepo) DeletePost(ctx context.Context, postId uuid.UUID) error {
 
 func (r *postRepo) ListPosts(ctx context.Context, from int, to int) ([]model.Post, error) {
 	// TODO: better
-	defer r.logger.Sync()
+	defer func() {
+		_ = r.logger.Sync()
+	}()
 	r.logger.Debug("ListPosts: executing query")
 	rows, err := r.conn(ctx).
 		Query(ctx, `SELECT id, author_id, content, created_ts, updated_ts FROM posts.posts ORDER BY created_ts DESC LIMIT $1 OFFSET $2`, to-from, from)

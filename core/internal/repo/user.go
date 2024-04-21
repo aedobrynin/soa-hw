@@ -8,14 +8,27 @@ import (
 	"github.com/google/uuid"
 )
 
+type AddRequest struct {
+	Login    string
+	Password string
+	Name     *string
+	Surname  *string
+	Email    *string
+	Phone    *string
+}
+
+type UpdateRequest struct {
+	UserId  uuid.UUID
+	Name    *string
+	Surname *string
+	Email   *string
+	Phone   *string
+}
+
 type User interface {
 	WithNewTx(ctx context.Context, f func(ctx context.Context) error) error
-	AddUser(ctx context.Context, login, password string) error
+	AddUser(ctx context.Context, request AddRequest) error
 	GetUser(ctx context.Context, login string) (*model.User, error)
 	ValidateUser(ctx context.Context, login, password string) (*model.User, error)
-
-	UpdateName(ctx context.Context, userId uuid.UUID, name string) error
-	UpdateSurname(ctx context.Context, userId uuid.UUID, surname string) error
-	UpdateEmail(ctx context.Context, userId uuid.UUID, email string) error
-	UpdatePhone(ctx context.Context, userId uuid.UUID, phone string) error
+	UpdateUser(ctx context.Context, request UpdateRequest) error
 }

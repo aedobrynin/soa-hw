@@ -62,6 +62,9 @@ func New(config *Config) (App, error) {
 	userService := usersvc.New(userRepo)
 
 	postsClient, err := postsclient.New(context.Background(), &config.Posts)
+	if err != nil {
+		return nil, fmt.Errorf("error on posts client initialization: %v", err)
+	}
 
 	a := &app{
 		config:      config,

@@ -19,7 +19,9 @@ type postSvc struct {
 }
 
 func (s *postSvc) AddPost(ctx context.Context, authorId uuid.UUID, content string) (uuid.UUID, error) {
-	defer s.logger.Sync()
+	defer func() {
+		_ = s.logger.Sync()
+	}()
 	s.logger.Sugar().Infof("Trying to add post with author_id=%s, content=%s", authorId.String(), content)
 
 	if len(content) == 0 {
