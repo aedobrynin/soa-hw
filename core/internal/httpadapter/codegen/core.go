@@ -70,10 +70,14 @@ type PatchV1PostsPostIdParams struct {
 	XSESSION string `form:"X_SESSION" json:"X_SESSION"`
 }
 
-// PostV1SignUpJSONBody defines parameters for PostV1SignUp.
-type PostV1SignUpJSONBody struct {
-	Login    string `json:"login"`
-	Password string `json:"password"`
+// PostV1UsersJSONBody defines parameters for PostV1Users.
+type PostV1UsersJSONBody struct {
+	Email    *string `json:"email,omitempty"`
+	Login    string  `json:"login"`
+	Name     *string `json:"name,omitempty"`
+	Password string  `json:"password"`
+	Phone    *string `json:"phone,omitempty"`
+	Surname  *string `json:"surname,omitempty"`
 }
 
 // PatchV1UsersUserIdJSONBody defines parameters for PatchV1UsersUserId.
@@ -98,8 +102,8 @@ type PostV1PostsJSONRequestBody PostV1PostsJSONBody
 // PatchV1PostsPostIdJSONRequestBody defines body for PatchV1PostsPostId for application/json ContentType.
 type PatchV1PostsPostIdJSONRequestBody PatchV1PostsPostIdJSONBody
 
-// PostV1SignUpJSONRequestBody defines body for PostV1SignUp for application/json ContentType.
-type PostV1SignUpJSONRequestBody PostV1SignUpJSONBody
+// PostV1UsersJSONRequestBody defines body for PostV1Users for application/json ContentType.
+type PostV1UsersJSONRequestBody PostV1UsersJSONBody
 
 // PatchV1UsersUserIdJSONRequestBody defines body for PatchV1UsersUserId for application/json ContentType.
 type PatchV1UsersUserIdJSONRequestBody PatchV1UsersUserIdJSONBody
@@ -124,9 +128,9 @@ type ServerInterface interface {
 
 	// (PATCH /v1/posts/{post_id})
 	PatchV1PostsPostId(w http.ResponseWriter, r *http.Request, postId openapi_types.UUID, params PatchV1PostsPostIdParams)
-	// Register new user
-	// (POST /v1/sign_up)
-	PostV1SignUp(w http.ResponseWriter, r *http.Request)
+
+	// (POST /v1/users)
+	PostV1Users(w http.ResponseWriter, r *http.Request)
 
 	// (PATCH /v1/users/{user_id})
 	PatchV1UsersUserId(w http.ResponseWriter, r *http.Request, userId openapi_types.UUID, params PatchV1UsersUserIdParams)
@@ -167,9 +171,8 @@ func (_ Unimplemented) PatchV1PostsPostId(w http.ResponseWriter, r *http.Request
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
-// Register new user
-// (POST /v1/sign_up)
-func (_ Unimplemented) PostV1SignUp(w http.ResponseWriter, r *http.Request) {
+// (POST /v1/users)
+func (_ Unimplemented) PostV1Users(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -432,12 +435,12 @@ func (siw *ServerInterfaceWrapper) PatchV1PostsPostId(w http.ResponseWriter, r *
 	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
-// PostV1SignUp operation middleware
-func (siw *ServerInterfaceWrapper) PostV1SignUp(w http.ResponseWriter, r *http.Request) {
+// PostV1Users operation middleware
+func (siw *ServerInterfaceWrapper) PostV1Users(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.PostV1SignUp(w, r)
+		siw.Handler.PostV1Users(w, r)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -624,7 +627,7 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 		r.Patch(options.BaseURL+"/v1/posts/{post_id}", wrapper.PatchV1PostsPostId)
 	})
 	r.Group(func(r chi.Router) {
-		r.Post(options.BaseURL+"/v1/sign_up", wrapper.PostV1SignUp)
+		r.Post(options.BaseURL+"/v1/users", wrapper.PostV1Users)
 	})
 	r.Group(func(r chi.Router) {
 		r.Patch(options.BaseURL+"/v1/users/{user_id}", wrapper.PatchV1UsersUserId)
@@ -870,25 +873,25 @@ func (response PatchV1PostsPostId422JSONResponse) VisitPatchV1PostsPostIdRespons
 	return json.NewEncoder(w).Encode(response)
 }
 
-type PostV1SignUpRequestObject struct {
-	Body *PostV1SignUpJSONRequestBody
+type PostV1UsersRequestObject struct {
+	Body *PostV1UsersJSONRequestBody
 }
 
-type PostV1SignUpResponseObject interface {
-	VisitPostV1SignUpResponse(w http.ResponseWriter) error
+type PostV1UsersResponseObject interface {
+	VisitPostV1UsersResponse(w http.ResponseWriter) error
 }
 
-type PostV1SignUp200Response struct {
+type PostV1Users200Response struct {
 }
 
-func (response PostV1SignUp200Response) VisitPostV1SignUpResponse(w http.ResponseWriter) error {
+func (response PostV1Users200Response) VisitPostV1UsersResponse(w http.ResponseWriter) error {
 	w.WriteHeader(200)
 	return nil
 }
 
-type PostV1SignUp422JSONResponse ErrorMessage
+type PostV1Users422JSONResponse ErrorMessage
 
-func (response PostV1SignUp422JSONResponse) VisitPostV1SignUpResponse(w http.ResponseWriter) error {
+func (response PostV1Users422JSONResponse) VisitPostV1UsersResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(422)
 
@@ -950,9 +953,9 @@ type StrictServerInterface interface {
 
 	// (PATCH /v1/posts/{post_id})
 	PatchV1PostsPostId(ctx context.Context, request PatchV1PostsPostIdRequestObject) (PatchV1PostsPostIdResponseObject, error)
-	// Register new user
-	// (POST /v1/sign_up)
-	PostV1SignUp(ctx context.Context, request PostV1SignUpRequestObject) (PostV1SignUpResponseObject, error)
+
+	// (POST /v1/users)
+	PostV1Users(ctx context.Context, request PostV1UsersRequestObject) (PostV1UsersResponseObject, error)
 
 	// (PATCH /v1/users/{user_id})
 	PatchV1UsersUserId(ctx context.Context, request PatchV1UsersUserIdRequestObject) (PatchV1UsersUserIdResponseObject, error)
@@ -1165,11 +1168,11 @@ func (sh *strictHandler) PatchV1PostsPostId(w http.ResponseWriter, r *http.Reque
 	}
 }
 
-// PostV1SignUp operation middleware
-func (sh *strictHandler) PostV1SignUp(w http.ResponseWriter, r *http.Request) {
-	var request PostV1SignUpRequestObject
+// PostV1Users operation middleware
+func (sh *strictHandler) PostV1Users(w http.ResponseWriter, r *http.Request) {
+	var request PostV1UsersRequestObject
 
-	var body PostV1SignUpJSONRequestBody
+	var body PostV1UsersJSONRequestBody
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
 		return
@@ -1177,18 +1180,18 @@ func (sh *strictHandler) PostV1SignUp(w http.ResponseWriter, r *http.Request) {
 	request.Body = &body
 
 	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
-		return sh.ssi.PostV1SignUp(ctx, request.(PostV1SignUpRequestObject))
+		return sh.ssi.PostV1Users(ctx, request.(PostV1UsersRequestObject))
 	}
 	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "PostV1SignUp")
+		handler = middleware(handler, "PostV1Users")
 	}
 
 	response, err := handler(r.Context(), w, r, request)
 
 	if err != nil {
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
-	} else if validResponse, ok := response.(PostV1SignUpResponseObject); ok {
-		if err := validResponse.VisitPostV1SignUpResponse(w); err != nil {
+	} else if validResponse, ok := response.(PostV1UsersResponseObject); ok {
+		if err := validResponse.VisitPostV1UsersResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {

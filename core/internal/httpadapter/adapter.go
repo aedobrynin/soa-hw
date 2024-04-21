@@ -32,22 +32,6 @@ type adapter struct {
 	logger *zap.Logger
 }
 
-// (POST /v1/sign_up)
-func (a *adapter) PostV1SignUp(
-	ctx context.Context,
-	request codegen.PostV1SignUpRequestObject,
-) (codegen.PostV1SignUpResponseObject, error) {
-	err := a.userService.SignUp(ctx, request.Body.Login, request.Body.Password)
-	switch {
-	case errors.Is(err, service.ErrLoginValidation) || errors.Is(err, service.ErrPasswordValidation) || errors.Is(err, service.ErrLoginTaken):
-		return codegen.PostV1SignUp422JSONResponse(codegen.ErrorMessage{Error: err.Error()}), nil
-	case err != nil:
-		return nil, err
-	default:
-		return codegen.PostV1SignUp200Response{}, nil
-	}
-}
-
 // (POST /v1/auth)
 func (a *adapter) PostV1Auth(
 	ctx context.Context,
@@ -70,6 +54,38 @@ func (a *adapter) PostV1Auth(
 			),
 		},
 	}, nil
+}
+
+// (POST /v1/users)
+func (a *adapter) PostV1Users(
+	ctx context.Context,
+	request codegen.PostV1UsersRequestObject,
+) (codegen.PostV1UsersResponseObject, error) {
+	err := a.userService.SignUp(
+		ctx,
+		service.SignUpRequest{
+			Login:    request.Body.Login,
+			Password: request.Body.Password,
+			Name:     request.Body.Name,
+			Surname:  request.Body.Surname,
+			Email:    request.Body.Email,
+			Phone:    request.Body.Phone,
+		},
+	)
+	switch {
+	case errors.Is(err, service.ErrLoginValidation) ||
+		errors.Is(err, service.ErrPasswordValidation) ||
+		errors.Is(err, service.ErrNameValidation) ||
+		errors.Is(err, service.ErrSurnameValidation) ||
+		errors.Is(err, service.ErrEmailValidation) ||
+		errors.Is(err, service.ErrPhoneValidation) ||
+		errors.Is(err, service.ErrLoginTaken):
+		return codegen.PostV1Users422JSONResponse(codegen.ErrorMessage{Error: err.Error()}), nil
+	case err != nil:
+		return nil, err
+	default:
+		return codegen.PostV1Users200Response{}, nil
+	}
 }
 
 // (PATCH /v1/users/{user_id})

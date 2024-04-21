@@ -6,6 +6,15 @@ import (
 	"github.com/google/uuid"
 )
 
+type SignUpRequest struct {
+	Login    string
+	Password string
+	Name     *string
+	Surname  *string
+	Email    *string
+	Phone    *string
+}
+
 type EditRequest struct {
 	UserId  uuid.UUID
 	Name    *string
@@ -15,6 +24,6 @@ type EditRequest struct {
 }
 
 type User interface {
-	SignUp(ctx context.Context, login, password string) error
+	SignUp(ctx context.Context, request SignUpRequest) error
 	Edit(ctx context.Context, request EditRequest) error
 }

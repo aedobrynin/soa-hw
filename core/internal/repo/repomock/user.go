@@ -20,8 +20,8 @@ func (m *UserMock) WithNewTx(ctx context.Context, f func(ctx context.Context) er
 	return args.Error(0)
 }
 
-func (m *UserMock) AddUser(ctx context.Context, login, password string) error {
-	args := m.Called(ctx, login, password)
+func (m *UserMock) AddUser(ctx context.Context, request repo.AddRequest) error {
+	args := m.Called(ctx, request)
 	return args.Error(0)
 }
 

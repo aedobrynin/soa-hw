@@ -36,7 +36,9 @@ func (a *App) Serve() error {
 
 	go func() {
 		if err := a.grpcAdapter.Run(); err != nil {
-			defer a.logger.Sync()
+			defer func() {
+				_ = a.logger.Sync()
+			}()
 			a.logger.Fatal(err.Error())
 		}
 	}()

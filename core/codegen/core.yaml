@@ -1,6 +1,6 @@
 output: internal/httpadapter/codegen/core.go
 package: codegen
 generate:
-  strict-server: true
-  chi-server: true
-  models: true
+    strict-server: true
+    chi-server: true
+    models: true

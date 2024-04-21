@@ -13,7 +13,7 @@ func isAsciiLetter(r rune) bool {
 }
 
 func isBadRuneForPassword(r rune) bool {
-	return !(isAsciiLetter(r) || unicode.IsDigit(r) || unicode.IsSymbol(r))
+	return !(isAsciiLetter(r) || unicode.IsDigit(r) || r == '_')
 }
 
 func validatePassword(password string) error {
