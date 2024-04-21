@@ -61,17 +61,106 @@ func TestPasswordValidation(t *testing.T) {
 }
 
 func TestNameValidation(t *testing.T) {
-	// TODO
+	testCases := []struct {
+		Name    string
+		IsValid bool
+	}{
+		{"", false},                      // Too short
+		{strings.Repeat("a", 26), false}, // Too long
+		{"русские буквы", false},         // Bad letters
+		{"_!@#$%;:^?*()-+=@.,", false},   // Symbols
+		{"validName", true},
+		{"1234567890", true},
+		{"val1dname", true},
+		{"underscore_123", true},
+	}
+	for _, tt := range testCases {
+		t.Run(tt.Name, func(t *testing.T) {
+			err := validateName(tt.Name)
+			if tt.IsValid {
+				require.NoError(t, err)
+			} else {
+				require.ErrorIs(t, err, service.ErrNameValidation)
+			}
+		})
+	}
 }
 
 func TestSurnameValidation(t *testing.T) {
-	// TODO
+	testCases := []struct {
+		Surname string
+		IsValid bool
+	}{
+		{"", false},                      // Too short
+		{strings.Repeat("a", 26), false}, // Too long
+		{"русские буквы", false},         // Bad letters
+		{"_!@#$%;:^?*()-+=@.,", false},   // Symbols
+		{"validName", true},
+		{"1234567890", true},
+		{"val1dname", true},
+		{"underscore_123", true},
+	}
+	for _, tt := range testCases {
+		t.Run(tt.Surname, func(t *testing.T) {
+			err := validateSurname(tt.Surname)
+			if tt.IsValid {
+				require.NoError(t, err)
+			} else {
+				require.ErrorIs(t, err, service.ErrSurnameValidation)
+			}
+		})
+	}
 }
 
 func TestEmailValidation(t *testing.T) {
-	// TODO
+	testCases := []struct {
+		Email   string
+		IsValid bool
+	}{
+		{"", false},
+		{"русские буквы@mail.com", false}, // Bad letters
+		{"_!@#$%;:^?*()-+=@.,", false},    // Symbols
+		{"@", false},
+		{"a@b", true}, // TODO: myb it's invalid?
+		{"mail", false},
+		{"mail@", false},
+		{"@mail.com", false},
+		{"mail@mail.com", true},
+		{"my_email@my_email.bz", true},
+	}
+	for _, tt := range testCases {
+		t.Run(tt.Email, func(t *testing.T) {
+			err := validateEmail(tt.Email)
+			if tt.IsValid {
+				require.NoError(t, err)
+			} else {
+				require.ErrorIs(t, err, service.ErrEmailValidation)
+			}
+		})
+	}
 }
 
 func TestPhoneValidation(t *testing.T) {
-	// TODO
+	testCases := []struct {
+		Phone   string
+		IsValid bool
+	}{
+		{"", false},                      // Too short
+		{strings.Repeat("1", 26), false}, // Too long
+		{"letters123", false},            // Letters
+		{"_12312312", false},             // Symbols
+		{"123213123", true},
+		{"1", true},
+		{"555", true},
+	}
+	for _, tt := range testCases {
+		t.Run(tt.Phone, func(t *testing.T) {
+			err := validatePhone(tt.Phone)
+			if tt.IsValid {
+				require.NoError(t, err)
+			} else {
+				require.ErrorIs(t, err, service.ErrPhoneValidation)
+			}
+		})
+	}
 }

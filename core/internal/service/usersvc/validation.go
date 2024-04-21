@@ -89,6 +89,7 @@ func validateSurname(login string) error {
 }
 
 func validateEmail(email string) error {
+	// TODO: length limits
 	_, err := mail.ParseAddress(email)
 	if err != nil {
 		return service.ErrEmailValidation
@@ -102,6 +103,11 @@ func isBadRuneForPhone(r rune) bool {
 
 func validatePhone(phone string) error {
 	// TODO: support '+' symbol
+
+	if len(phone) < 1 || len(phone) > 25 {
+		return service.ErrPhoneValidation
+	}
+
 	if strings.ContainsFunc(phone, isBadRuneForPhone) {
 		return service.ErrPhoneValidation
 	}
