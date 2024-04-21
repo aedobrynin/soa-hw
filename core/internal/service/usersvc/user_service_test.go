@@ -110,7 +110,4 @@ func TestSignUpLoginIsTaken(t *testing.T) {
 	require.ErrorIs(t, err, service.ErrLoginTaken)
 }
 
-// TODO: test ChangeName
-// TODO: test ChangeSurname
-// TODO: test ChangeEmail
-// TODO: test ChangePhone
+// TODO: test Edit

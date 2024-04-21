@@ -4,6 +4,7 @@ info:
   version: 1.0.0
 
 paths:
+  # TODO: make it part of /v1/users
   /v1/sign_up:
     post:
       summary: Register new user
@@ -69,8 +70,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorMessage'
 
-  /v1/change_name:
-    post:
+  /v1/users/{user_id}:
+    patch:
       parameters:
         # TODO: use refresh token too
         - in: cookie
@@ -78,6 +79,13 @@ paths:
           schema:
             type: string
           required: true
+        - name: user_id
+          in: path
+          description: User ID
+          required: true
+          schema:
+            type: string
+            format: uuid
       requestBody:
         required: true
         content:
@@ -89,115 +97,23 @@ paths:
                   type: string
                   minLength: 1
                   maxLength: 25
-              required:
-                - name
-      responses:
-        '200':
-          description: OK
-        '401':
-          description: Unathorized
-        '422':
-          description: name didn't meet the requirements
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorMessage'
-
-  /v1/change_surname:
-    post:
-      parameters:
-        # TODO: use refresh token too
-        - in: cookie
-          name: X_SESSION
-          schema:
-            type: string
-          required: true
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
                 surname:
                   type: string
                   minLength: 1
                   maxLength: 25
-              required:
-                - surname
-      responses:
-        '200':
-          description: OK
-        '401':
-          description: Unathorized
-        '422':
-          description: surname didn't meet the requirements
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorMessage'
-
-  /v1/change_email:
-    post:
-      parameters:
-        # TODO: use refresh token too
-        - in: cookie
-          name: X_SESSION
-          schema:
-            type: string
-          required: true
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
                 email:
                   type: string
                   minLength: 1
-                  maxLength: 25
-              required:
-                - email
-      responses:
-        '200':
-          description: OK
-        '401':
-          description: Unathorized
-        '422':
-          description: email didn't meet the requirements
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorMessage'
-
-  /v1/change_phone:
-    post:
-      parameters:
-        # TODO: use refresh token too
-        - in: cookie
-          name: X_SESSION
-          schema:
-            type: string
-          required: true
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
+                  maxLength: 50
                 phone:
                   type: string
-              required:
-                - phone
       responses:
         '200':
           description: OK
         '401':
           description: Unathorized
         '422':
-          description: phone didn't meet the requirements
+          description: Some field didn't meet the requirements
           content:
             application/json:
               schema:
@@ -342,7 +258,7 @@ paths:
         '404':
           description: Post not found
 
-  # TODO: REST
+  # TODO: better pagination
   /v1/posts/list:
     post:
       description: list posts

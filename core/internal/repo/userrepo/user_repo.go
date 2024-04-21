@@ -3,6 +3,8 @@ package userrepo
 import (
 	"context"
 	"errors"
+	"fmt"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgconn"
@@ -97,55 +99,50 @@ func (r *userRepo) ValidateUser(ctx context.Context, login, password string) (*m
 
 func (r *userRepo) UpdateUser(
 	ctx context.Context,
-	userId uuid.UUID,
-	name *string,
-	surname *string,
-	email *string,
-	phone *string,
+	request repo.UpdateRequest,
 ) error {
-	res, err := r.conn(ctx).Exec(ctx, `UPDATE core.users SET name = $1 WHERE id = $2`, *name, userId)
-	if err != nil {
-		return err
+	if request.Name == nil && request.Surname == nil && request.Email == nil && request.Phone == nil {
+		return nil
 	}
-	if res.RowsAffected() != 1 {
-		return repo.ErrUserNotFound
-	}
-	return nil
-}
 
-func (r *userRepo) UpdateName(ctx context.Context, userId uuid.UUID, name string) error {
-	res, err := r.conn(ctx).Exec(ctx, `UPDATE core.users SET name = $1 WHERE id = $2`, name, userId)
-	if err != nil {
-		return err
+	var requestBuilder strings.Builder
+	requestBuilder.WriteString("UPDATE core.users SET ")
+	fields := make([]string, 0)
+	args := make([]interface{}, 0)
+	if request.Name != nil {
+		fields = append(fields, "name")
+		args = append(args, *request.Name)
 	}
-	if res.RowsAffected() != 1 {
-		return repo.ErrUserNotFound
+	if request.Surname != nil {
+		fields = append(fields, "surname")
+		args = append(args, *request.Surname)
 	}
-	return nil
-}
+	if request.Email != nil {
+		fields = append(fields, "email")
+		args = append(args, *request.Email)
+	}
+	if request.Phone != nil {
+		fields = append(fields, "phone")
+		args = append(args, *request.Phone)
+	}
+	if len(fields) != len(args) {
+		return errors.New("TODO")
+	}
 
-func (r *userRepo) UpdateSurname(ctx context.Context, userId uuid.UUID, surname string) error {
-	res, err := r.conn(ctx).Exec(ctx, `UPDATE core.users SET surname = $1 WHERE id = $2`, surname, userId)
-	if err != nil {
-		return err
+	for i := 0; i < len(fields); i++ {
+		var queryPart string
+		if i+1 != len(fields) {
+			queryPart = fmt.Sprintf("%s = $%d, ", fields[i], i+1)
+		} else {
+			queryPart = fmt.Sprintf("%s = $%d ", fields[i], i+1)
+		}
+		requestBuilder.WriteString(queryPart)
 	}
-	if res.RowsAffected() != 1 {
-		return repo.ErrUserNotFound
-	}
-	return nil
-}
-func (r *userRepo) UpdateEmail(ctx context.Context, userId uuid.UUID, email string) error {
-	res, err := r.conn(ctx).Exec(ctx, `UPDATE core.users SET email = $1 WHERE id = $2`, email, userId)
-	if err != nil {
-		return err
-	}
-	if res.RowsAffected() != 1 {
-		return repo.ErrUserNotFound
-	}
-	return nil
-}
-func (r *userRepo) UpdatePhone(ctx context.Context, userId uuid.UUID, phone string) error {
-	res, err := r.conn(ctx).Exec(ctx, `UPDATE core.users SET phone = $1 WHERE id = $2`, phone, userId)
+
+	args = append(args, request.UserId)
+	requestBuilder.WriteString(fmt.Sprintf("WHERE id = $%d", len(args)))
+
+	res, err := r.conn(ctx).Exec(ctx, requestBuilder.String(), args...)
 	if err != nil {
 		return err
 	}

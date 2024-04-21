@@ -6,7 +6,6 @@ import (
 	"github.com/aedobrynin/soa-hw/core/internal/model"
 	"github.com/aedobrynin/soa-hw/core/internal/repo"
 
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -36,39 +35,8 @@ func (m *UserMock) ValidateUser(ctx context.Context, login, password string) (*m
 	return args.Get(0).(*model.User), args.Error(1)
 }
 
-func (m *UserMock) UpdateName(
-	ctx context.Context,
-	userId uuid.UUID,
-	name string,
-) error {
-	args := m.Called(ctx, userId, name)
-	return args.Error(0)
-}
-
-func (m *UserMock) UpdateSurname(
-	ctx context.Context,
-	userId uuid.UUID,
-	surname string,
-) error {
-	args := m.Called(ctx, userId, surname)
-	return args.Error(0)
-}
-
-func (m *UserMock) UpdateEmail(
-	ctx context.Context,
-	userId uuid.UUID,
-	email string,
-) error {
-	args := m.Called(ctx, userId, email)
-	return args.Error(0)
-}
-
-func (m *UserMock) UpdatePhone(
-	ctx context.Context,
-	userId uuid.UUID,
-	phone string,
-) error {
-	args := m.Called(ctx, userId, phone)
+func (m *UserMock) UpdateUser(ctx context.Context, request repo.UpdateRequest) error {
+	args := m.Called(ctx, request)
 	return args.Error(0)
 }
 

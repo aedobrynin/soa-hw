@@ -72,121 +72,42 @@ func (a *adapter) PostV1Auth(
 	}, nil
 }
 
-// (POST /v1/change_name)
-func (a *adapter) PostV1ChangeName(
+// (PATCH /v1/users/{user_id})
+func (a *adapter) PatchV1UsersUserId(
 	ctx context.Context,
-	request codegen.PostV1ChangeNameRequestObject,
-) (codegen.PostV1ChangeNameResponseObject, error) {
+	request codegen.PatchV1UsersUserIdRequestObject,
+) (codegen.PatchV1UsersUserIdResponseObject, error) {
 	// TODO: use refresh token too
 	_, userId, err := a.authService.ValidateAndRefresh(
 		ctx,
 		&model.TokenPair{AccessToken: request.Params.XSESSION, RefreshToken: ""},
 	)
 	switch {
-	case errors.Is(err, service.ErrUnsupportedClaims) || errors.Is(err, service.ErrUnauthorized):
-		return codegen.PostV1ChangeName401Response{}, nil
+	case errors.Is(err, service.ErrUnsupportedClaims) || errors.Is(err, service.ErrUnauthorized) || request.UserId != *userId:
+		return codegen.PatchV1UsersUserId401Response{}, nil
 	case err != nil:
 		return nil, err
 	}
 
-	err = a.userService.ChangeName(ctx, *userId, request.Body.Name)
+	err = a.userService.Edit(ctx, service.EditRequest{
+		UserId:  *userId,
+		Name:    request.Body.Name,
+		Surname: request.Body.Surname,
+		Email:   request.Body.Email,
+		Phone:   request.Body.Phone,
+	})
 	switch {
-	case errors.Is(err, service.ErrNameValidation):
-		return codegen.PostV1ChangeName422JSONResponse(codegen.ErrorMessage{Error: err.Error()}), nil
+	case errors.Is(err, service.ErrNameValidation) ||
+		errors.Is(err, service.ErrSurnameValidation) ||
+		errors.Is(err, service.ErrEmailValidation) ||
+		errors.Is(err, service.ErrPhoneValidation):
+		return codegen.PatchV1UsersUserId422JSONResponse(codegen.ErrorMessage{Error: err.Error()}), nil
 	case errors.Is(err, service.ErrUserNotFound):
-		return codegen.PostV1ChangeName401Response{}, nil
+		return codegen.PatchV1UsersUserId401Response{}, nil
 	case err != nil:
 		return nil, err
 	}
-	return codegen.PostV1ChangeName200Response{}, nil
-}
-
-// (POST /v1/change_surname)
-func (a *adapter) PostV1ChangeSurname(
-	ctx context.Context,
-	request codegen.PostV1ChangeSurnameRequestObject,
-) (codegen.PostV1ChangeSurnameResponseObject, error) {
-	// TODO: use refresh token too
-	_, userId, err := a.authService.ValidateAndRefresh(
-		ctx,
-		&model.TokenPair{AccessToken: request.Params.XSESSION, RefreshToken: ""},
-	)
-	switch {
-	case errors.Is(err, service.ErrUnsupportedClaims) || errors.Is(err, service.ErrUnauthorized):
-		return codegen.PostV1ChangeSurname401Response{}, nil
-	case err != nil:
-		return nil, err
-	}
-
-	err = a.userService.ChangeSurname(ctx, *userId, request.Body.Surname)
-	switch {
-	case errors.Is(err, service.ErrSurnameValidation):
-		return codegen.PostV1ChangeSurname422JSONResponse(codegen.ErrorMessage{Error: err.Error()}), nil
-	case errors.Is(err, service.ErrUserNotFound):
-		return codegen.PostV1ChangeSurname401Response{}, nil
-	case err != nil:
-		return nil, err
-	}
-	return codegen.PostV1ChangeSurname200Response{}, nil
-}
-
-// (POST /v1/change_email)
-func (a *adapter) PostV1ChangeEmail(
-	ctx context.Context,
-	request codegen.PostV1ChangeEmailRequestObject,
-) (codegen.PostV1ChangeEmailResponseObject, error) {
-	// TODO: use refresh token too
-	_, userId, err := a.authService.ValidateAndRefresh(
-		ctx,
-		&model.TokenPair{AccessToken: request.Params.XSESSION, RefreshToken: ""},
-	)
-	switch {
-	case errors.Is(err, service.ErrUnsupportedClaims) || errors.Is(err, service.ErrUnauthorized):
-		return codegen.PostV1ChangeEmail401Response{}, nil
-	case err != nil:
-		return nil, err
-	}
-
-	err = a.userService.ChangeEmail(ctx, *userId, request.Body.Email)
-	switch {
-	case errors.Is(err, service.ErrEmailValidation):
-		return codegen.PostV1ChangeEmail422JSONResponse(codegen.ErrorMessage{Error: err.Error()}), nil
-	case errors.Is(err, service.ErrUserNotFound):
-		return codegen.PostV1ChangeEmail401Response{}, nil
-	case err != nil:
-		return nil, err
-	}
-	return codegen.PostV1ChangeEmail200Response{}, nil
-
-}
-
-// (POST /v1/change_phone)
-func (a *adapter) PostV1ChangePhone(
-	ctx context.Context,
-	request codegen.PostV1ChangePhoneRequestObject,
-) (codegen.PostV1ChangePhoneResponseObject, error) {
-	// TODO: use refresh token too
-	_, userId, err := a.authService.ValidateAndRefresh(
-		ctx,
-		&model.TokenPair{AccessToken: request.Params.XSESSION, RefreshToken: ""},
-	)
-	switch {
-	case errors.Is(err, service.ErrUnsupportedClaims) || errors.Is(err, service.ErrUnauthorized):
-		return codegen.PostV1ChangePhone401Response{}, nil
-	case err != nil:
-		return nil, err
-	}
-
-	err = a.userService.ChangePhone(ctx, *userId, request.Body.Phone)
-	switch {
-	case errors.Is(err, service.ErrPhoneValidation):
-		return codegen.PostV1ChangePhone422JSONResponse(codegen.ErrorMessage{Error: err.Error()}), nil
-	case errors.Is(err, service.ErrUserNotFound):
-		return codegen.PostV1ChangePhone401Response{}, nil
-	case err != nil:
-		return nil, err
-	}
-	return codegen.PostV1ChangePhone200Response{}, nil
+	return codegen.PatchV1UsersUserId200Response{}, nil
 }
 
 // (POST /v1/posts)

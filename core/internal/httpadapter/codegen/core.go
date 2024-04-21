@@ -33,46 +33,6 @@ type PostV1AuthJSONBody struct {
 	Password string `json:"password"`
 }
 
-// PostV1ChangeEmailJSONBody defines parameters for PostV1ChangeEmail.
-type PostV1ChangeEmailJSONBody struct {
-	Email string `json:"email"`
-}
-
-// PostV1ChangeEmailParams defines parameters for PostV1ChangeEmail.
-type PostV1ChangeEmailParams struct {
-	XSESSION string `form:"X_SESSION" json:"X_SESSION"`
-}
-
-// PostV1ChangeNameJSONBody defines parameters for PostV1ChangeName.
-type PostV1ChangeNameJSONBody struct {
-	Name string `json:"name"`
-}
-
-// PostV1ChangeNameParams defines parameters for PostV1ChangeName.
-type PostV1ChangeNameParams struct {
-	XSESSION string `form:"X_SESSION" json:"X_SESSION"`
-}
-
-// PostV1ChangePhoneJSONBody defines parameters for PostV1ChangePhone.
-type PostV1ChangePhoneJSONBody struct {
-	Phone string `json:"phone"`
-}
-
-// PostV1ChangePhoneParams defines parameters for PostV1ChangePhone.
-type PostV1ChangePhoneParams struct {
-	XSESSION string `form:"X_SESSION" json:"X_SESSION"`
-}
-
-// PostV1ChangeSurnameJSONBody defines parameters for PostV1ChangeSurname.
-type PostV1ChangeSurnameJSONBody struct {
-	Surname string `json:"surname"`
-}
-
-// PostV1ChangeSurnameParams defines parameters for PostV1ChangeSurname.
-type PostV1ChangeSurnameParams struct {
-	XSESSION string `form:"X_SESSION" json:"X_SESSION"`
-}
-
 // PostV1PostsJSONBody defines parameters for PostV1Posts.
 type PostV1PostsJSONBody struct {
 	Content string `json:"content"`
@@ -116,20 +76,21 @@ type PostV1SignUpJSONBody struct {
 	Password string `json:"password"`
 }
 
+// PatchV1UsersUserIdJSONBody defines parameters for PatchV1UsersUserId.
+type PatchV1UsersUserIdJSONBody struct {
+	Email   *string `json:"email,omitempty"`
+	Name    *string `json:"name,omitempty"`
+	Phone   *string `json:"phone,omitempty"`
+	Surname *string `json:"surname,omitempty"`
+}
+
+// PatchV1UsersUserIdParams defines parameters for PatchV1UsersUserId.
+type PatchV1UsersUserIdParams struct {
+	XSESSION string `form:"X_SESSION" json:"X_SESSION"`
+}
+
 // PostV1AuthJSONRequestBody defines body for PostV1Auth for application/json ContentType.
 type PostV1AuthJSONRequestBody PostV1AuthJSONBody
-
-// PostV1ChangeEmailJSONRequestBody defines body for PostV1ChangeEmail for application/json ContentType.
-type PostV1ChangeEmailJSONRequestBody PostV1ChangeEmailJSONBody
-
-// PostV1ChangeNameJSONRequestBody defines body for PostV1ChangeName for application/json ContentType.
-type PostV1ChangeNameJSONRequestBody PostV1ChangeNameJSONBody
-
-// PostV1ChangePhoneJSONRequestBody defines body for PostV1ChangePhone for application/json ContentType.
-type PostV1ChangePhoneJSONRequestBody PostV1ChangePhoneJSONBody
-
-// PostV1ChangeSurnameJSONRequestBody defines body for PostV1ChangeSurname for application/json ContentType.
-type PostV1ChangeSurnameJSONRequestBody PostV1ChangeSurnameJSONBody
 
 // PostV1PostsJSONRequestBody defines body for PostV1Posts for application/json ContentType.
 type PostV1PostsJSONRequestBody PostV1PostsJSONBody
@@ -140,23 +101,14 @@ type PatchV1PostsPostIdJSONRequestBody PatchV1PostsPostIdJSONBody
 // PostV1SignUpJSONRequestBody defines body for PostV1SignUp for application/json ContentType.
 type PostV1SignUpJSONRequestBody PostV1SignUpJSONBody
 
+// PatchV1UsersUserIdJSONRequestBody defines body for PatchV1UsersUserId for application/json ContentType.
+type PatchV1UsersUserIdJSONRequestBody PatchV1UsersUserIdJSONBody
+
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 	// Authentificate user
 	// (POST /v1/auth)
 	PostV1Auth(w http.ResponseWriter, r *http.Request)
-
-	// (POST /v1/change_email)
-	PostV1ChangeEmail(w http.ResponseWriter, r *http.Request, params PostV1ChangeEmailParams)
-
-	// (POST /v1/change_name)
-	PostV1ChangeName(w http.ResponseWriter, r *http.Request, params PostV1ChangeNameParams)
-
-	// (POST /v1/change_phone)
-	PostV1ChangePhone(w http.ResponseWriter, r *http.Request, params PostV1ChangePhoneParams)
-
-	// (POST /v1/change_surname)
-	PostV1ChangeSurname(w http.ResponseWriter, r *http.Request, params PostV1ChangeSurnameParams)
 
 	// (POST /v1/posts)
 	PostV1Posts(w http.ResponseWriter, r *http.Request, params PostV1PostsParams)
@@ -175,6 +127,9 @@ type ServerInterface interface {
 	// Register new user
 	// (POST /v1/sign_up)
 	PostV1SignUp(w http.ResponseWriter, r *http.Request)
+
+	// (PATCH /v1/users/{user_id})
+	PatchV1UsersUserId(w http.ResponseWriter, r *http.Request, userId openapi_types.UUID, params PatchV1UsersUserIdParams)
 }
 
 // Unimplemented server implementation that returns http.StatusNotImplemented for each endpoint.
@@ -184,26 +139,6 @@ type Unimplemented struct{}
 // Authentificate user
 // (POST /v1/auth)
 func (_ Unimplemented) PostV1Auth(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusNotImplemented)
-}
-
-// (POST /v1/change_email)
-func (_ Unimplemented) PostV1ChangeEmail(w http.ResponseWriter, r *http.Request, params PostV1ChangeEmailParams) {
-	w.WriteHeader(http.StatusNotImplemented)
-}
-
-// (POST /v1/change_name)
-func (_ Unimplemented) PostV1ChangeName(w http.ResponseWriter, r *http.Request, params PostV1ChangeNameParams) {
-	w.WriteHeader(http.StatusNotImplemented)
-}
-
-// (POST /v1/change_phone)
-func (_ Unimplemented) PostV1ChangePhone(w http.ResponseWriter, r *http.Request, params PostV1ChangePhoneParams) {
-	w.WriteHeader(http.StatusNotImplemented)
-}
-
-// (POST /v1/change_surname)
-func (_ Unimplemented) PostV1ChangeSurname(w http.ResponseWriter, r *http.Request, params PostV1ChangeSurnameParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -238,6 +173,11 @@ func (_ Unimplemented) PostV1SignUp(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
+// (PATCH /v1/users/{user_id})
+func (_ Unimplemented) PatchV1UsersUserId(w http.ResponseWriter, r *http.Request, userId openapi_types.UUID, params PatchV1UsersUserIdParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
 // ServerInterfaceWrapper converts contexts to parameters.
 type ServerInterfaceWrapper struct {
 	Handler            ServerInterface
@@ -253,150 +193,6 @@ func (siw *ServerInterfaceWrapper) PostV1Auth(w http.ResponseWriter, r *http.Req
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.PostV1Auth(w, r)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r.WithContext(ctx))
-}
-
-// PostV1ChangeEmail operation middleware
-func (siw *ServerInterfaceWrapper) PostV1ChangeEmail(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	var err error
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params PostV1ChangeEmailParams
-
-	var cookie *http.Cookie
-
-	if cookie, err = r.Cookie("X_SESSION"); err == nil {
-		var value string
-		err = runtime.BindStyledParameter("simple", true, "X_SESSION", cookie.Value, &value)
-		if err != nil {
-			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X_SESSION", Err: err})
-			return
-		}
-		params.XSESSION = value
-
-	} else {
-		siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "X_SESSION"})
-		return
-	}
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.PostV1ChangeEmail(w, r, params)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r.WithContext(ctx))
-}
-
-// PostV1ChangeName operation middleware
-func (siw *ServerInterfaceWrapper) PostV1ChangeName(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	var err error
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params PostV1ChangeNameParams
-
-	var cookie *http.Cookie
-
-	if cookie, err = r.Cookie("X_SESSION"); err == nil {
-		var value string
-		err = runtime.BindStyledParameter("simple", true, "X_SESSION", cookie.Value, &value)
-		if err != nil {
-			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X_SESSION", Err: err})
-			return
-		}
-		params.XSESSION = value
-
-	} else {
-		siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "X_SESSION"})
-		return
-	}
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.PostV1ChangeName(w, r, params)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r.WithContext(ctx))
-}
-
-// PostV1ChangePhone operation middleware
-func (siw *ServerInterfaceWrapper) PostV1ChangePhone(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	var err error
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params PostV1ChangePhoneParams
-
-	var cookie *http.Cookie
-
-	if cookie, err = r.Cookie("X_SESSION"); err == nil {
-		var value string
-		err = runtime.BindStyledParameter("simple", true, "X_SESSION", cookie.Value, &value)
-		if err != nil {
-			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X_SESSION", Err: err})
-			return
-		}
-		params.XSESSION = value
-
-	} else {
-		siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "X_SESSION"})
-		return
-	}
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.PostV1ChangePhone(w, r, params)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r.WithContext(ctx))
-}
-
-// PostV1ChangeSurname operation middleware
-func (siw *ServerInterfaceWrapper) PostV1ChangeSurname(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	var err error
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params PostV1ChangeSurnameParams
-
-	var cookie *http.Cookie
-
-	if cookie, err = r.Cookie("X_SESSION"); err == nil {
-		var value string
-		err = runtime.BindStyledParameter("simple", true, "X_SESSION", cookie.Value, &value)
-		if err != nil {
-			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X_SESSION", Err: err})
-			return
-		}
-		params.XSESSION = value
-
-	} else {
-		siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "X_SESSION"})
-		return
-	}
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.PostV1ChangeSurname(w, r, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -651,6 +447,51 @@ func (siw *ServerInterfaceWrapper) PostV1SignUp(w http.ResponseWriter, r *http.R
 	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
+// PatchV1UsersUserId operation middleware
+func (siw *ServerInterfaceWrapper) PatchV1UsersUserId(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var err error
+
+	// ------------- Path parameter "user_id" -------------
+	var userId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "user_id", runtime.ParamLocationPath, chi.URLParam(r, "user_id"), &userId)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "user_id", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params PatchV1UsersUserIdParams
+
+	var cookie *http.Cookie
+
+	if cookie, err = r.Cookie("X_SESSION"); err == nil {
+		var value string
+		err = runtime.BindStyledParameter("simple", true, "X_SESSION", cookie.Value, &value)
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X_SESSION", Err: err})
+			return
+		}
+		params.XSESSION = value
+
+	} else {
+		siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "X_SESSION"})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.PatchV1UsersUserId(w, r, userId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
 type UnescapedCookieParamError struct {
 	ParamName string
 	Err       error
@@ -768,18 +609,6 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 		r.Post(options.BaseURL+"/v1/auth", wrapper.PostV1Auth)
 	})
 	r.Group(func(r chi.Router) {
-		r.Post(options.BaseURL+"/v1/change_email", wrapper.PostV1ChangeEmail)
-	})
-	r.Group(func(r chi.Router) {
-		r.Post(options.BaseURL+"/v1/change_name", wrapper.PostV1ChangeName)
-	})
-	r.Group(func(r chi.Router) {
-		r.Post(options.BaseURL+"/v1/change_phone", wrapper.PostV1ChangePhone)
-	})
-	r.Group(func(r chi.Router) {
-		r.Post(options.BaseURL+"/v1/change_surname", wrapper.PostV1ChangeSurname)
-	})
-	r.Group(func(r chi.Router) {
 		r.Post(options.BaseURL+"/v1/posts", wrapper.PostV1Posts)
 	})
 	r.Group(func(r chi.Router) {
@@ -796,6 +625,9 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	})
 	r.Group(func(r chi.Router) {
 		r.Post(options.BaseURL+"/v1/sign_up", wrapper.PostV1SignUp)
+	})
+	r.Group(func(r chi.Router) {
+		r.Patch(options.BaseURL+"/v1/users/{user_id}", wrapper.PatchV1UsersUserId)
 	})
 
 	return r
@@ -828,142 +660,6 @@ type PostV1Auth401JSONResponse ErrorMessage
 func (response PostV1Auth401JSONResponse) VisitPostV1AuthResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(401)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type PostV1ChangeEmailRequestObject struct {
-	Params PostV1ChangeEmailParams
-	Body   *PostV1ChangeEmailJSONRequestBody
-}
-
-type PostV1ChangeEmailResponseObject interface {
-	VisitPostV1ChangeEmailResponse(w http.ResponseWriter) error
-}
-
-type PostV1ChangeEmail200Response struct {
-}
-
-func (response PostV1ChangeEmail200Response) VisitPostV1ChangeEmailResponse(w http.ResponseWriter) error {
-	w.WriteHeader(200)
-	return nil
-}
-
-type PostV1ChangeEmail401Response struct {
-}
-
-func (response PostV1ChangeEmail401Response) VisitPostV1ChangeEmailResponse(w http.ResponseWriter) error {
-	w.WriteHeader(401)
-	return nil
-}
-
-type PostV1ChangeEmail422JSONResponse ErrorMessage
-
-func (response PostV1ChangeEmail422JSONResponse) VisitPostV1ChangeEmailResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(422)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type PostV1ChangeNameRequestObject struct {
-	Params PostV1ChangeNameParams
-	Body   *PostV1ChangeNameJSONRequestBody
-}
-
-type PostV1ChangeNameResponseObject interface {
-	VisitPostV1ChangeNameResponse(w http.ResponseWriter) error
-}
-
-type PostV1ChangeName200Response struct {
-}
-
-func (response PostV1ChangeName200Response) VisitPostV1ChangeNameResponse(w http.ResponseWriter) error {
-	w.WriteHeader(200)
-	return nil
-}
-
-type PostV1ChangeName401Response struct {
-}
-
-func (response PostV1ChangeName401Response) VisitPostV1ChangeNameResponse(w http.ResponseWriter) error {
-	w.WriteHeader(401)
-	return nil
-}
-
-type PostV1ChangeName422JSONResponse ErrorMessage
-
-func (response PostV1ChangeName422JSONResponse) VisitPostV1ChangeNameResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(422)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type PostV1ChangePhoneRequestObject struct {
-	Params PostV1ChangePhoneParams
-	Body   *PostV1ChangePhoneJSONRequestBody
-}
-
-type PostV1ChangePhoneResponseObject interface {
-	VisitPostV1ChangePhoneResponse(w http.ResponseWriter) error
-}
-
-type PostV1ChangePhone200Response struct {
-}
-
-func (response PostV1ChangePhone200Response) VisitPostV1ChangePhoneResponse(w http.ResponseWriter) error {
-	w.WriteHeader(200)
-	return nil
-}
-
-type PostV1ChangePhone401Response struct {
-}
-
-func (response PostV1ChangePhone401Response) VisitPostV1ChangePhoneResponse(w http.ResponseWriter) error {
-	w.WriteHeader(401)
-	return nil
-}
-
-type PostV1ChangePhone422JSONResponse ErrorMessage
-
-func (response PostV1ChangePhone422JSONResponse) VisitPostV1ChangePhoneResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(422)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type PostV1ChangeSurnameRequestObject struct {
-	Params PostV1ChangeSurnameParams
-	Body   *PostV1ChangeSurnameJSONRequestBody
-}
-
-type PostV1ChangeSurnameResponseObject interface {
-	VisitPostV1ChangeSurnameResponse(w http.ResponseWriter) error
-}
-
-type PostV1ChangeSurname200Response struct {
-}
-
-func (response PostV1ChangeSurname200Response) VisitPostV1ChangeSurnameResponse(w http.ResponseWriter) error {
-	w.WriteHeader(200)
-	return nil
-}
-
-type PostV1ChangeSurname401Response struct {
-}
-
-func (response PostV1ChangeSurname401Response) VisitPostV1ChangeSurnameResponse(w http.ResponseWriter) error {
-	w.WriteHeader(401)
-	return nil
-}
-
-type PostV1ChangeSurname422JSONResponse ErrorMessage
-
-func (response PostV1ChangeSurname422JSONResponse) VisitPostV1ChangeSurnameResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(422)
 
 	return json.NewEncoder(w).Encode(response)
 }
@@ -1199,23 +895,46 @@ func (response PostV1SignUp422JSONResponse) VisitPostV1SignUpResponse(w http.Res
 	return json.NewEncoder(w).Encode(response)
 }
 
+type PatchV1UsersUserIdRequestObject struct {
+	UserId openapi_types.UUID `json:"user_id"`
+	Params PatchV1UsersUserIdParams
+	Body   *PatchV1UsersUserIdJSONRequestBody
+}
+
+type PatchV1UsersUserIdResponseObject interface {
+	VisitPatchV1UsersUserIdResponse(w http.ResponseWriter) error
+}
+
+type PatchV1UsersUserId200Response struct {
+}
+
+func (response PatchV1UsersUserId200Response) VisitPatchV1UsersUserIdResponse(w http.ResponseWriter) error {
+	w.WriteHeader(200)
+	return nil
+}
+
+type PatchV1UsersUserId401Response struct {
+}
+
+func (response PatchV1UsersUserId401Response) VisitPatchV1UsersUserIdResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type PatchV1UsersUserId422JSONResponse ErrorMessage
+
+func (response PatchV1UsersUserId422JSONResponse) VisitPatchV1UsersUserIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(422)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 // StrictServerInterface represents all server handlers.
 type StrictServerInterface interface {
 	// Authentificate user
 	// (POST /v1/auth)
 	PostV1Auth(ctx context.Context, request PostV1AuthRequestObject) (PostV1AuthResponseObject, error)
-
-	// (POST /v1/change_email)
-	PostV1ChangeEmail(ctx context.Context, request PostV1ChangeEmailRequestObject) (PostV1ChangeEmailResponseObject, error)
-
-	// (POST /v1/change_name)
-	PostV1ChangeName(ctx context.Context, request PostV1ChangeNameRequestObject) (PostV1ChangeNameResponseObject, error)
-
-	// (POST /v1/change_phone)
-	PostV1ChangePhone(ctx context.Context, request PostV1ChangePhoneRequestObject) (PostV1ChangePhoneResponseObject, error)
-
-	// (POST /v1/change_surname)
-	PostV1ChangeSurname(ctx context.Context, request PostV1ChangeSurnameRequestObject) (PostV1ChangeSurnameResponseObject, error)
 
 	// (POST /v1/posts)
 	PostV1Posts(ctx context.Context, request PostV1PostsRequestObject) (PostV1PostsResponseObject, error)
@@ -1234,6 +953,9 @@ type StrictServerInterface interface {
 	// Register new user
 	// (POST /v1/sign_up)
 	PostV1SignUp(ctx context.Context, request PostV1SignUpRequestObject) (PostV1SignUpResponseObject, error)
+
+	// (PATCH /v1/users/{user_id})
+	PatchV1UsersUserId(ctx context.Context, request PatchV1UsersUserIdRequestObject) (PatchV1UsersUserIdResponseObject, error)
 }
 
 type StrictHandlerFunc = strictnethttp.StrictHttpHandlerFunc
@@ -1289,138 +1011,6 @@ func (sh *strictHandler) PostV1Auth(w http.ResponseWriter, r *http.Request) {
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
 	} else if validResponse, ok := response.(PostV1AuthResponseObject); ok {
 		if err := validResponse.VisitPostV1AuthResponse(w); err != nil {
-			sh.options.ResponseErrorHandlerFunc(w, r, err)
-		}
-	} else if response != nil {
-		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
-// PostV1ChangeEmail operation middleware
-func (sh *strictHandler) PostV1ChangeEmail(w http.ResponseWriter, r *http.Request, params PostV1ChangeEmailParams) {
-	var request PostV1ChangeEmailRequestObject
-
-	request.Params = params
-
-	var body PostV1ChangeEmailJSONRequestBody
-	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
-		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
-		return
-	}
-	request.Body = &body
-
-	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
-		return sh.ssi.PostV1ChangeEmail(ctx, request.(PostV1ChangeEmailRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "PostV1ChangeEmail")
-	}
-
-	response, err := handler(r.Context(), w, r, request)
-
-	if err != nil {
-		sh.options.ResponseErrorHandlerFunc(w, r, err)
-	} else if validResponse, ok := response.(PostV1ChangeEmailResponseObject); ok {
-		if err := validResponse.VisitPostV1ChangeEmailResponse(w); err != nil {
-			sh.options.ResponseErrorHandlerFunc(w, r, err)
-		}
-	} else if response != nil {
-		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
-// PostV1ChangeName operation middleware
-func (sh *strictHandler) PostV1ChangeName(w http.ResponseWriter, r *http.Request, params PostV1ChangeNameParams) {
-	var request PostV1ChangeNameRequestObject
-
-	request.Params = params
-
-	var body PostV1ChangeNameJSONRequestBody
-	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
-		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
-		return
-	}
-	request.Body = &body
-
-	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
-		return sh.ssi.PostV1ChangeName(ctx, request.(PostV1ChangeNameRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "PostV1ChangeName")
-	}
-
-	response, err := handler(r.Context(), w, r, request)
-
-	if err != nil {
-		sh.options.ResponseErrorHandlerFunc(w, r, err)
-	} else if validResponse, ok := response.(PostV1ChangeNameResponseObject); ok {
-		if err := validResponse.VisitPostV1ChangeNameResponse(w); err != nil {
-			sh.options.ResponseErrorHandlerFunc(w, r, err)
-		}
-	} else if response != nil {
-		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
-// PostV1ChangePhone operation middleware
-func (sh *strictHandler) PostV1ChangePhone(w http.ResponseWriter, r *http.Request, params PostV1ChangePhoneParams) {
-	var request PostV1ChangePhoneRequestObject
-
-	request.Params = params
-
-	var body PostV1ChangePhoneJSONRequestBody
-	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
-		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
-		return
-	}
-	request.Body = &body
-
-	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
-		return sh.ssi.PostV1ChangePhone(ctx, request.(PostV1ChangePhoneRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "PostV1ChangePhone")
-	}
-
-	response, err := handler(r.Context(), w, r, request)
-
-	if err != nil {
-		sh.options.ResponseErrorHandlerFunc(w, r, err)
-	} else if validResponse, ok := response.(PostV1ChangePhoneResponseObject); ok {
-		if err := validResponse.VisitPostV1ChangePhoneResponse(w); err != nil {
-			sh.options.ResponseErrorHandlerFunc(w, r, err)
-		}
-	} else if response != nil {
-		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
-// PostV1ChangeSurname operation middleware
-func (sh *strictHandler) PostV1ChangeSurname(w http.ResponseWriter, r *http.Request, params PostV1ChangeSurnameParams) {
-	var request PostV1ChangeSurnameRequestObject
-
-	request.Params = params
-
-	var body PostV1ChangeSurnameJSONRequestBody
-	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
-		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
-		return
-	}
-	request.Body = &body
-
-	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
-		return sh.ssi.PostV1ChangeSurname(ctx, request.(PostV1ChangeSurnameRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "PostV1ChangeSurname")
-	}
-
-	response, err := handler(r.Context(), w, r, request)
-
-	if err != nil {
-		sh.options.ResponseErrorHandlerFunc(w, r, err)
-	} else if validResponse, ok := response.(PostV1ChangeSurnameResponseObject); ok {
-		if err := validResponse.VisitPostV1ChangeSurnameResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {
@@ -1599,6 +1189,40 @@ func (sh *strictHandler) PostV1SignUp(w http.ResponseWriter, r *http.Request) {
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
 	} else if validResponse, ok := response.(PostV1SignUpResponseObject); ok {
 		if err := validResponse.VisitPostV1SignUpResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PatchV1UsersUserId operation middleware
+func (sh *strictHandler) PatchV1UsersUserId(w http.ResponseWriter, r *http.Request, userId openapi_types.UUID, params PatchV1UsersUserIdParams) {
+	var request PatchV1UsersUserIdRequestObject
+
+	request.UserId = userId
+	request.Params = params
+
+	var body PatchV1UsersUserIdJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.PatchV1UsersUserId(ctx, request.(PatchV1UsersUserIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PatchV1UsersUserId")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(PatchV1UsersUserIdResponseObject); ok {
+		if err := validResponse.VisitPatchV1UsersUserIdResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {
