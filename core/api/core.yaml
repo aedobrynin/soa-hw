@@ -203,7 +203,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorMessage'
 
-  /v1/posts/create:
+  /v1/posts:
     post:
       description: create new post
       parameters:
@@ -237,9 +237,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorMessage'
 
-  /v1/posts/retrieve:
-    post:
-      description: retrieve post
+  /v1/posts/{post_id}:
+    get:
+      description: get post
       parameters:
         # TODO: use refresh token too
         - in: cookie
@@ -247,12 +247,13 @@ paths:
           schema:
             type: string
           required: true
-        - in: query
-          name: post_id
+        - name: post_id
+          in: path
+          description: Post ID
+          required: true
           schema:
             type: string
             format: uuid
-          required: true
       responses:
         '200':
           description: OK
@@ -271,9 +272,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorMessage'
 
-  /v1/posts/edit:
-    post:
-      description: edit post content
+    patch:
+      description: edit post
       parameters:
         # TODO: use refresh token too
         - in: cookie
@@ -281,12 +281,13 @@ paths:
           schema:
             type: string
           required: true
-        - in: query
-          name: post_id
+        - name: post_id
+          in: path
+          description: Post ID
+          required: true
           schema:
             type: string
             format: uuid
-          required: true
       requestBody:
         required: true
         content:
@@ -294,11 +295,11 @@ paths:
             schema:
               type: object
               properties:
-                new_content:
+                content:
                   type: string
                   minLength: 1
               required:
-                - new_content
+                - content
       responses:
         '200':
           description: OK
@@ -315,8 +316,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorMessage'
 
-  /v1/posts/delete:
-    post:
+    delete:
       description: delete post
       parameters:
         # TODO: use refresh token too
@@ -325,12 +325,13 @@ paths:
           schema:
             type: string
           required: true
-        - in: query
-          name: post_id
+        - name: post_id
+          in: path
+          description: Post ID
+          required: true
           schema:
             type: string
             format: uuid
-          required: true
       responses:
         '200':
           description: OK
@@ -341,6 +342,7 @@ paths:
         '404':
           description: Post not found
 
+  # TODO: REST
   /v1/posts/list:
     post:
       description: list posts
