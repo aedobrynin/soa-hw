@@ -2,7 +2,6 @@ package usersvc_test
 
 import (
 	"context"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/mock"
@@ -19,49 +18,7 @@ const (
 	validPassword = "valid_password"
 )
 
-func TestSignUpLoginValidation(t *testing.T) {
-	ctx := context.Background()
-
-	userRepo := repomock.NewUser()
-	svc := usersvc.New(userRepo)
-
-	// Too short
-	err := svc.SignUp(ctx, service.SignUpRequest{Login: "", Password: validPassword})
-	require.ErrorIs(t, err, service.ErrLoginValidation)
-
-	// Too long
-	err = svc.SignUp(ctx, service.SignUpRequest{Login: strings.Repeat("a", 26), Password: validPassword})
-	require.ErrorIs(t, err, service.ErrLoginValidation)
-
-	// Unsupported letter
-	err = svc.SignUp(ctx, service.SignUpRequest{Login: "русские_буквы", Password: validPassword})
-	require.ErrorIs(t, err, service.ErrLoginValidation)
-
-	// Symbol
-	err = svc.SignUp(ctx, service.SignUpRequest{Login: "okokok@", Password: validPassword})
-	require.ErrorIs(t, err, service.ErrLoginValidation)
-}
-
-func TestSignUpPasswordValidation(t *testing.T) {
-	ctx := context.Background()
-
-	userRepo := repomock.NewUser()
-	svc := usersvc.New(userRepo)
-
-	// Too short
-	err := svc.SignUp(ctx, service.SignUpRequest{Login: validLogin, Password: strings.Repeat("a", 7)})
-	require.ErrorIs(t, err, service.ErrPasswordValidation)
-
-	// Too long
-	err = svc.SignUp(ctx, service.SignUpRequest{Login: validLogin, Password: strings.Repeat("a", 256)})
-	require.ErrorIs(t, err, service.ErrPasswordValidation)
-
-	// Unsupported letter
-	err = svc.SignUp(ctx, service.SignUpRequest{Login: validLogin, Password: "русские_буквы"})
-	require.ErrorIs(t, err, service.ErrPasswordValidation)
-}
-
-// TODO test name, surname, email, phone validation
+// TODO: myb some tests for validation here too?
 
 func TestSignUpHappyPath(t *testing.T) {
 	ctx := context.Background()

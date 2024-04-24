@@ -2,6 +2,7 @@ package usersvc
 
 import (
 	"net/mail"
+	"slices"
 	"strings"
 	"unicode"
 
@@ -12,8 +13,31 @@ func isAsciiLetter(r rune) bool {
 	return ('a' <= r && r <= 'z') || ('A' <= r && r <= 'Z')
 }
 
+var (
+	validPasswordSymbols = []rune{
+		'_',
+		'!',
+		'@',
+		'#',
+		'$',
+		'%',
+		';',
+		':',
+		'^',
+		'?',
+		'*',
+		'(',
+		')',
+		'-',
+		'+',
+		'=',
+		'.',
+		',',
+	}
+)
+
 func isBadRuneForPassword(r rune) bool {
-	return !(isAsciiLetter(r) || unicode.IsDigit(r) || r == '_')
+	return !(isAsciiLetter(r) || unicode.IsDigit(r) || slices.Contains(validPasswordSymbols, r))
 }
 
 func validatePassword(password string) error {
@@ -65,6 +89,7 @@ func validateSurname(login string) error {
 }
 
 func validateEmail(email string) error {
+	// TODO: length limits
 	_, err := mail.ParseAddress(email)
 	if err != nil {
 		return service.ErrEmailValidation
@@ -78,6 +103,11 @@ func isBadRuneForPhone(r rune) bool {
 
 func validatePhone(phone string) error {
 	// TODO: support '+' symbol
+
+	if len(phone) < 1 || len(phone) > 25 {
+		return service.ErrPhoneValidation
+	}
+
 	if strings.ContainsFunc(phone, isBadRuneForPhone) {
 		return service.ErrPhoneValidation
 	}
