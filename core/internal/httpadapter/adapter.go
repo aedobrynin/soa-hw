@@ -12,7 +12,6 @@ import (
 	"github.com/aedobrynin/soa-hw/core/internal/logger"
 	"github.com/aedobrynin/soa-hw/core/internal/model"
 	"github.com/aedobrynin/soa-hw/core/internal/service"
-	"github.com/google/uuid"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/juju/zaputil/zapctx"
@@ -99,7 +98,7 @@ func (a *adapter) PatchV1UsersUserId(
 		&model.TokenPair{AccessToken: request.Params.XSESSION, RefreshToken: ""},
 	)
 	switch {
-	case errors.Is(err, service.ErrUnsupportedClaims) || errors.Is(err, service.ErrUnauthorized) || request.UserId != *userId:
+	case errors.Is(err, service.ErrUnsupportedClaims) || errors.Is(err, service.ErrUnauthorized) || request.UserId != userId.String():
 		return codegen.PatchV1UsersUserId401Response{}, nil
 	case err != nil:
 		return nil, err
@@ -235,18 +234,8 @@ func (a *adapter) GetV1PostsPostId(
 	if errors.Is(err, clients.ErrPostNotFound) {
 		return codegen.GetV1PostsPostId404Response{}, nil
 	}
-
-	postId, err := uuid.Parse(post.Id)
-	if err != nil {
-		return nil, err
-	}
-	authorId, err := uuid.Parse(post.AuthorId)
-	if err != nil {
-		return nil, err
-	}
-
 	return codegen.GetV1PostsPostId200JSONResponse(
-		codegen.Post{Id: postId, AuthorId: authorId, Content: post.Content},
+		codegen.Post{Id: post.Id, AuthorId: post.AuthorId.String(), Content: post.Content},
 	), nil
 }
 
@@ -289,16 +278,10 @@ func (a *adapter) PostV1PostsList(
 
 	respPosts := make([]codegen.Post, 0, len(posts))
 	for _, post := range posts {
-		id, err := uuid.Parse(post.Id)
-		if err != nil {
-			return nil, err
-		}
-
-		authorId, err := uuid.Parse(post.AuthorId)
-		if err != nil {
-			return nil, err
-		}
-		respPosts = append(respPosts, codegen.Post{Id: id, AuthorId: authorId, Content: post.Content})
+		respPosts = append(
+			respPosts,
+			codegen.Post{Id: post.Id, AuthorId: post.AuthorId.String(), Content: post.Content},
+		)
 	}
 	return codegen.PostV1PostsList200JSONResponse{NextPageToken: nextPageToken, Posts: respPosts}, nil
 }

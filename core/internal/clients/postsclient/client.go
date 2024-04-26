@@ -6,7 +6,6 @@ import (
 
 	"github.com/google/uuid"
 	grpcretry "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/retry"
-	"github.com/juju/zaputil/zapctx"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
@@ -14,50 +13,59 @@ import (
 
 	"github.com/aedobrynin/soa-hw/core/internal/clients"
 	"github.com/aedobrynin/soa-hw/core/internal/clients/postsclient/gen"
+	"github.com/aedobrynin/soa-hw/core/internal/model"
 )
 
 type PostsClient struct {
 	api gen.PostsClient
 }
 
-func (c *PostsClient) CreatePost(
-	ctx context.Context,
-	authorId uuid.UUID,
-	content string,
-) (uuid.UUID, error) {
-	resp, err := c.api.CreatePost(ctx, &gen.CreatePostRequest{AuthorId: authorId.String(), Content: content})
+var _ clients.PostsClient = &PostsClient{}
+
+func convertToInternal(post *gen.Post) (*model.Post, error) {
+	if post == nil {
+		return nil, nil
+	}
+	authorId, err := uuid.Parse(post.AuthorId)
 	if err != nil {
-		// TODO: this is bad
-		if status.Code(err) == codes.InvalidArgument {
-			return uuid.Nil, clients.ErrContentIsEmpty
-		}
-		return uuid.Nil, err
+		return nil, err
 	}
 
-	postId, err := uuid.Parse(resp.PostId)
+	return &model.Post{
+		Id:       post.Id,
+		AuthorId: authorId,
+		Content:  post.Content,
+	}, nil
+}
+
+func (c *PostsClient) CreatePost(
+	ctx context.Context,
+	authorId model.UserId,
+	content string,
+) (model.PostId, error) {
+	resp, err := c.api.CreatePost(ctx, &gen.CreatePostRequest{AuthorId: authorId.String(), Content: content})
 	if err != nil {
-		logger := zapctx.Logger(ctx)
-		defer func() {
-			_ = logger.Sync()
-		}()
-		logger.Sugar().Errorf("couldn't parse postId %s from posts service as uuid", resp.PostId)
-		return uuid.Nil, err
+		// TODO: is this bad?
+		if status.Code(err) == codes.InvalidArgument {
+			return "", clients.ErrContentIsEmpty
+		}
+		return "", err
 	}
-	return postId, nil
+	return resp.PostId, nil
 }
 
 func (c *PostsClient) EditPost(
 	ctx context.Context,
-	postId uuid.UUID,
-	editorId uuid.UUID,
+	postId model.PostId,
+	editorId model.UserId,
 	newContent string,
 ) error {
 	_, err := c.api.EditPost(
 		ctx,
-		&gen.EditPostRequest{PostId: postId.String(), EditorId: editorId.String(), NewContent: newContent},
+		&gen.EditPostRequest{PostId: postId, EditorId: editorId.String(), NewContent: newContent},
 	)
 	if err != nil {
-		// TODO: this is bad
+		// TODO: is this bad?
 		if status.Code(err) == codes.InvalidArgument {
 			return clients.ErrContentIsEmpty
 		}
@@ -74,12 +82,12 @@ func (c *PostsClient) EditPost(
 
 func (c *PostsClient) DeletePost(
 	ctx context.Context,
-	postId uuid.UUID,
-	deleterId uuid.UUID,
+	postId model.PostId,
+	deleterId model.UserId,
 ) error {
 	_, err := c.api.DeletePost(
 		ctx,
-		&gen.DeletePostRequest{PostId: postId.String(), DeleterId: deleterId.String()},
+		&gen.DeletePostRequest{PostId: postId, DeleterId: deleterId.String()},
 	)
 	if err != nil {
 		if status.Code(err) == codes.NotFound {
@@ -95,23 +103,23 @@ func (c *PostsClient) DeletePost(
 
 func (c *PostsClient) GetPost(
 	ctx context.Context,
-	postId uuid.UUID,
-) (*gen.Post, error) {
-	post, err := c.api.GetPost(ctx, &gen.GetPostRequest{PostId: postId.String()})
+	postId model.PostId,
+) (*model.Post, error) {
+	post, err := c.api.GetPost(ctx, &gen.GetPostRequest{PostId: postId})
 	if err != nil {
 		if status.Code(err) == codes.NotFound {
 			return nil, clients.ErrPostNotFound
 		}
 		return nil, err
 	}
-	return post, nil
+	return convertToInternal(post)
 }
 
 func (c *PostsClient) ListPosts(
 	ctx context.Context,
 	pageSize uint32,
 	pageToken string,
-) (posts []*gen.Post, nextPageToken string, err error) {
+) (posts []*model.Post, nextPageToken string, err error) {
 	resp, err := c.api.ListPosts(ctx, &gen.ListPostsRequest{PageSize: pageSize, PageToken: pageToken})
 	if err != nil {
 		if status.Code(err) == codes.InvalidArgument {
@@ -119,7 +127,16 @@ func (c *PostsClient) ListPosts(
 		}
 		return nil, "", err
 	}
-	return resp.Posts, resp.NextPageToken, nil
+
+	posts = make([]*model.Post, 0, len(resp.Posts))
+	for _, post := range resp.Posts {
+		convertedPost, err := convertToInternal(post)
+		if err != nil {
+			return nil, "", err
+		}
+		posts = append(posts, convertedPost)
+	}
+	return posts, resp.NextPageToken, nil
 }
 
 func New(
