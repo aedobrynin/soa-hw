@@ -20,23 +20,23 @@ func TestAddPostHappyPath(t *testing.T) {
 		t.Error(err)
 	}
 
-	authorId := uuid.New()
+	authorID := uuid.New().String()
 	content := "content"
-	expectedPostId := uuid.New()
+	expectedPostID := uuid.New()
 
 	postRepo := repomock.NewPost()
 	postRepo.On(
 		"AddPost",
 		mock.MatchedBy(func(ctx context.Context) bool { return true }),
-		authorId,
+		authorID,
 		content,
-	).Return(expectedPostId, nil)
+	).Return(expectedPostID, nil)
 	svc := postsvc.New(logger, postRepo)
 
 	ctx := context.Background()
 
-	returnedPostId, err := svc.AddPost(ctx, authorId, "content")
-	require.Equal(t, returnedPostId, expectedPostId, "returned different post id")
+	returnedPostID, err := svc.AddPost(ctx, authorID, "content")
+	require.Equal(t, returnedPostID, expectedPostID, "returned different post id")
 	require.Nil(t, err, "error should be nil in happy path")
 }
 
@@ -51,8 +51,8 @@ func TestAddPostEmptyContent(t *testing.T) {
 
 	ctx := context.Background()
 
-	returnedPostId, err := svc.AddPost(ctx, uuid.New(), "")
-	require.Equal(t, returnedPostId, uuid.Nil)
+	returnedPostID, err := svc.AddPost(ctx, uuid.New().String(), "")
+	require.Equal(t, returnedPostID, uuid.Nil)
 	require.Equal(t, err, service.ErrContentIsEmpty)
 }
 

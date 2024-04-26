@@ -16,7 +16,7 @@ type SignUpRequest struct {
 }
 
 type EditRequest struct {
-	UserId  uuid.UUID
+	UserID  uuid.UUID
 	Name    *string
 	Surname *string
 	Email   *string

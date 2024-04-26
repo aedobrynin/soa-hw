@@ -30,7 +30,7 @@ func TestLoginHappyPath(t *testing.T) {
 		mock.MatchedBy(func(ctx context.Context) bool { return true }),
 		login,
 		password,
-	).Return(&model.User{Id: uuid.New(), Login: login, HashedPassword: []byte("hashed")}, nil).Once()
+	).Return(&model.User{ID: uuid.New(), Login: login, HashedPassword: []byte("hashed")}, nil).Once()
 
 	config := &service.AuthConfig{
 		SigningKey:           "signingKey",
@@ -104,7 +104,7 @@ func TestLoginWrongPassword(t *testing.T) {
 func TestTokensTTL(t *testing.T) {
 	ctx := context.Background()
 
-	userId := uuid.New()
+	userID := uuid.New()
 
 	userRepo := repomock.NewUser()
 	userRepo.On(
@@ -112,7 +112,7 @@ func TestTokensTTL(t *testing.T) {
 		mock.MatchedBy(func(ctx context.Context) bool { return true }),
 		"login",
 		"password",
-	).Return(&model.User{Id: userId, Login: "login", HashedPassword: []byte("hashed")}, nil)
+	).Return(&model.User{ID: userID, Login: "login", HashedPassword: []byte("hashed")}, nil)
 
 	config := &service.AuthConfig{
 		SigningKey:           "signingKey",
@@ -125,18 +125,18 @@ func TestTokensTTL(t *testing.T) {
 	initialPair, err := svc.Login(ctx, "login", "password")
 	require.Nil(t, err)
 
-	newPair, parsedUserId, err := svc.ValidateAndRefresh(ctx, initialPair)
+	newPair, parsedUserID, err := svc.ValidateAndRefresh(ctx, initialPair)
 	require.Nil(t, err)
-	require.Equal(t, userId, *parsedUserId)
+	require.Equal(t, userID, *parsedUserID)
 
 	require.Equal(t, initialPair.AccessToken, newPair.AccessToken)
 	require.Equal(t, initialPair.RefreshToken, newPair.RefreshToken)
 
 	time.Sleep(config.AccessTokenDuration)
 
-	newPair, parsedUserId, err = svc.ValidateAndRefresh(ctx, initialPair)
+	newPair, parsedUserID, err = svc.ValidateAndRefresh(ctx, initialPair)
 	require.Nil(t, err)
-	require.Equal(t, userId, *parsedUserId)
+	require.Equal(t, userID, *parsedUserID)
 
 	require.NotEqual(t, initialPair.AccessToken, newPair.AccessToken)
 	require.NotEqual(t, initialPair.RefreshToken, newPair.RefreshToken)

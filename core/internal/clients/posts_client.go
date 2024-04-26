@@ -7,10 +7,10 @@ import (
 )
 
 type PostsClient interface {
-	CreatePost(ctx context.Context, authorId model.UserId, content string) (postID string, err error)
-	EditPost(ctx context.Context, postId string, editorId model.UserId, newContent string) error
-	DeletePost(ctx context.Context, postId string, deleterId model.UserId) error
-	GetPost(ctx context.Context, postId string) (*model.Post, error)
+	CreatePost(ctx context.Context, authorID model.UserID, content string) (postID string, err error)
+	EditPost(ctx context.Context, postID string, editorID model.UserID, newContent string) error
+	DeletePost(ctx context.Context, postID string, deleterID model.UserID) error
+	GetPost(ctx context.Context, postID string) (*model.Post, error)
 	ListPosts(
 		ctx context.Context,
 		pageSize uint32,

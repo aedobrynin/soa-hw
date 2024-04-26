@@ -20,5 +20,5 @@ type Auth interface {
 	ValidateAndRefresh(
 		ctx context.Context,
 		tokenPair *model.TokenPair,
-	) (new *model.TokenPair, userId *uuid.UUID, err error)
+	) (new *model.TokenPair, userID *uuid.UUID, err error)
 }

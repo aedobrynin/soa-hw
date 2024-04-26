@@ -25,7 +25,7 @@ type userRepo struct {
 	pgxPool *pgxpool.Pool
 }
 
-func generateUserId() uuid.UUID {
+func generateUserID() uuid.UUID {
 	return uuid.New()
 }
 
@@ -49,12 +49,12 @@ func (r *userRepo) AddUser(ctx context.Context, request repo.AddRequest) error {
 		return err
 	}
 
-	userId := generateUserId()
+	userID := generateUserID()
 
 	var requestBuilder strings.Builder
 	requestBuilder.WriteString("INSERT INTO core.users")
 	fields := []string{"id", "login", "password_hash"}
-	args := []interface{}{userId, request.Login, passwordHash}
+	args := []interface{}{userID, request.Login, passwordHash}
 	if request.Name != nil {
 		fields = append(fields, "name")
 		args = append(args, *request.Name)
@@ -109,7 +109,7 @@ func (r *userRepo) GetUser(ctx context.Context, login string) (*model.User, erro
 
 	row := r.conn(ctx).
 		QueryRow(ctx, `SELECT id, login, password_hash, name, surname, email, phone FROM core.users WHERE login = $1`, login)
-	if err := row.Scan(&user.Id, &user.Login, &user.HashedPassword, &user.Name, &user.Surname, &user.Email, &user.Phone); err != nil {
+	if err := row.Scan(&user.ID, &user.Login, &user.HashedPassword, &user.Name, &user.Surname, &user.Email, &user.Phone); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, repo.ErrUserNotFound
 		}
@@ -177,7 +177,7 @@ func (r *userRepo) UpdateUser(
 		requestBuilder.WriteString(queryPart)
 	}
 
-	args = append(args, request.UserId)
+	args = append(args, request.UserID)
 	requestBuilder.WriteString(fmt.Sprintf("WHERE id = $%d", len(args)))
 
 	res, err := r.conn(ctx).Exec(ctx, requestBuilder.String(), args...)

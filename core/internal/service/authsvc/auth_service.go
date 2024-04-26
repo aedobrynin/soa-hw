@@ -17,7 +17,7 @@ import (
 type Claims struct {
 	jwt.RegisteredClaims
 
-	UserId uuid.UUID `json:"user_id"`
+	UserID uuid.UUID `json:"user_id"`
 }
 
 type authService struct {
@@ -28,7 +28,7 @@ type authService struct {
 	refreshTokenDuration time.Duration
 }
 
-func (s *authService) makeToken(userId uuid.UUID, duration time.Duration) (string, error) {
+func (s *authService) makeToken(userID uuid.UUID, duration time.Duration) (string, error) {
 	now := time.Now().UTC()
 
 	claims := Claims{
@@ -37,19 +37,19 @@ func (s *authService) makeToken(userId uuid.UUID, duration time.Duration) (strin
 			IssuedAt:  jwt.NewNumericDate(now),
 			NotBefore: jwt.NewNumericDate(now),
 		},
-		UserId: userId,
+		UserID: userID,
 	}
 
 	return jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte(s.signingKey))
 }
 
-func (s *authService) newTokenPair(userId uuid.UUID) (*model.TokenPair, error) {
-	accessToken, err := s.makeToken(userId, s.accessTokenDuration)
+func (s *authService) newTokenPair(userID uuid.UUID) (*model.TokenPair, error) {
+	accessToken, err := s.makeToken(userID, s.accessTokenDuration)
 	if err != nil {
 		return nil, err
 	}
 
-	refreshToken, err := s.makeToken(userId, s.refreshTokenDuration)
+	refreshToken, err := s.makeToken(userID, s.refreshTokenDuration)
 	if err != nil {
 		return nil, err
 	}
@@ -80,14 +80,14 @@ func (s *authService) Login(ctx context.Context, login, password string) (*model
 	case err != nil:
 		return nil, err
 	default:
-		return s.newTokenPair(user.Id)
+		return s.newTokenPair(user.ID)
 	}
 }
 
 func (s *authService) ValidateAndRefresh(
 	ctx context.Context,
 	tokenPair *model.TokenPair,
-) (new *model.TokenPair, userId *uuid.UUID, err error) {
+) (new *model.TokenPair, userID *uuid.UUID, err error) {
 	accessToken, err := s.parseTokenString(tokenPair.AccessToken)
 
 	switch v := err.(type) {
@@ -96,7 +96,7 @@ func (s *authService) ValidateAndRefresh(
 		if !ok {
 			return nil, nil, service.ErrUnsupportedClaims
 		}
-		return tokenPair, &claims.UserId, nil
+		return tokenPair, &claims.UserID, nil
 
 	case *jwt.ValidationError:
 		if v.Errors&jwt.ValidationErrorExpired == 0 {
@@ -113,8 +113,9 @@ func (s *authService) ValidateAndRefresh(
 			return nil, nil, service.ErrUnsupportedClaims
 		}
 
-		newTokenPair, err := s.newTokenPair(claims.UserId)
-		return newTokenPair, &claims.UserId, err
+		var newTokenPair *model.TokenPair
+		newTokenPair, err = s.newTokenPair(claims.UserID)
+		return newTokenPair, &claims.UserID, err
 	}
 
 	return nil, nil, err

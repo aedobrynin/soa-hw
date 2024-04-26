@@ -18,31 +18,31 @@ type postSvc struct {
 	repo   repo.Post
 }
 
-func (s *postSvc) AddPost(ctx context.Context, authorId uuid.UUID, content string) (uuid.UUID, error) {
+func (s *postSvc) AddPost(ctx context.Context, authorID model.UserID, content string) (model.PostID, error) {
 	defer func() {
 		_ = s.logger.Sync()
 	}()
-	s.logger.Sugar().Infof("Trying to add post with author_id=%s, content=%s", authorId.String(), content)
+	s.logger.Sugar().Infof("Trying to add post with author_id=%s, content=%s", authorID, content)
 
 	if len(content) == 0 {
 		return uuid.Nil, service.ErrContentIsEmpty
 	}
 
-	postId, err := s.repo.AddPost(ctx, authorId, content)
+	postID, err := s.repo.AddPost(ctx, authorID, content)
 	if err != nil {
 		s.logger.Sugar().Infof("Couldn't create post: %s", err)
 	} else {
-		s.logger.Sugar().Infof("Created post with id=%s", postId)
+		s.logger.Sugar().Infof("Created post with id=%s", postID)
 	}
-	return postId, err
+	return postID, err
 }
 
-func (s *postSvc) EditPost(ctx context.Context, postId uuid.UUID, editorId uuid.UUID, newContent string) error {
+func (s *postSvc) EditPost(ctx context.Context, postID model.PostID, editorID model.UserID, newContent string) error {
 	if len(newContent) == 0 {
 		return service.ErrContentIsEmpty
 	}
 
-	post, err := s.repo.GetPost(ctx, postId)
+	post, err := s.repo.GetPost(ctx, postID)
 	if errors.Is(err, repo.ErrPostNotFound) {
 		return service.ErrPostNotFound
 	}
@@ -50,19 +50,19 @@ func (s *postSvc) EditPost(ctx context.Context, postId uuid.UUID, editorId uuid.
 		return err
 	}
 
-	if post.AuthorId != editorId {
+	if post.AuthorID != editorID {
 		return service.ErrInsufficientPermissions
 	}
 
-	err = s.repo.EditPost(ctx, postId, newContent)
+	err = s.repo.EditPost(ctx, postID, newContent)
 	if errors.Is(err, repo.ErrPostNotFound) {
 		return service.ErrPostNotFound
 	}
 	return err
 }
 
-func (s *postSvc) DeletePost(ctx context.Context, postId uuid.UUID, deleterId uuid.UUID) error {
-	post, err := s.repo.GetPost(ctx, postId)
+func (s *postSvc) DeletePost(ctx context.Context, postID model.PostID, deleterID model.UserID) error {
+	post, err := s.repo.GetPost(ctx, postID)
 	if errors.Is(err, repo.ErrPostNotFound) {
 		return service.ErrPostNotFound
 	}
@@ -70,18 +70,18 @@ func (s *postSvc) DeletePost(ctx context.Context, postId uuid.UUID, deleterId uu
 		return err
 	}
 
-	if post.AuthorId != deleterId {
+	if post.AuthorID != deleterID {
 		return service.ErrInsufficientPermissions
 	}
 
-	err = s.repo.DeletePost(ctx, postId)
+	err = s.repo.DeletePost(ctx, postID)
 	if errors.Is(err, repo.ErrPostNotFound) {
 		return service.ErrPostNotFound
 	}
 	return err
 }
-func (s *postSvc) GetPost(ctx context.Context, postId uuid.UUID) (*model.Post, error) {
-	post, err := s.repo.GetPost(ctx, postId)
+func (s *postSvc) GetPost(ctx context.Context, postID model.PostID) (*model.Post, error) {
+	post, err := s.repo.GetPost(ctx, postID)
 	if errors.Is(err, repo.ErrPostNotFound) {
 		return nil, service.ErrPostNotFound
 	}

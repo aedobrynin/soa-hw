@@ -27,12 +27,7 @@ func (s *serverAPI) CreatePost(
 	ctx context.Context,
 	request *gen.CreatePostRequest,
 ) (*gen.CreatePostResponse, error) {
-	authorId, err := uuid.Parse(request.AuthorId)
-	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, "author_id should be valid uuid")
-	}
-
-	postId, err := s.post.AddPost(ctx, authorId, request.Content)
+	postID, err := s.post.AddPost(ctx, request.AuthorId, request.Content)
 	if errors.Is(err, service.ErrContentIsEmpty) {
 		return nil, status.Errorf(codes.InvalidArgument, "content is empty")
 	}
@@ -40,22 +35,17 @@ func (s *serverAPI) CreatePost(
 		return nil, status.Errorf(codes.Internal, "internal error")
 	}
 	return &gen.CreatePostResponse{
-		PostId: postId.String(),
+		PostId: postID.String(),
 	}, nil
 }
 
 func (s *serverAPI) EditPost(ctx context.Context, request *gen.EditPostRequest) (*empty.Empty, error) {
-	postId, err := uuid.Parse(request.PostId)
+	postID, err := uuid.Parse(request.PostId)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, "post_id should be valid uuid")
 	}
 
-	editorId, err := uuid.Parse(request.EditorId)
-	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, "editor_id should be valid uuid")
-	}
-
-	err = s.post.EditPost(ctx, postId, editorId, request.NewContent)
+	err = s.post.EditPost(ctx, postID, request.EditorId, request.NewContent)
 	if errors.Is(err, service.ErrContentIsEmpty) {
 		return nil, status.Errorf(codes.InvalidArgument, "new_content is empty")
 	}
@@ -72,17 +62,12 @@ func (s *serverAPI) EditPost(ctx context.Context, request *gen.EditPostRequest) 
 }
 
 func (s *serverAPI) DeletePost(ctx context.Context, request *gen.DeletePostRequest) (*empty.Empty, error) {
-	postId, err := uuid.Parse(request.PostId)
+	postID, err := uuid.Parse(request.PostId)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, "post_id should be valid uuid")
 	}
 
-	deleterId, err := uuid.Parse(request.DeleterId)
-	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, "deleter_id should be valid uuid")
-	}
-
-	err = s.post.DeletePost(ctx, postId, deleterId)
+	err = s.post.DeletePost(ctx, postID, request.DeleterId)
 	if errors.Is(err, service.ErrPostNotFound) {
 		return nil, status.Errorf(codes.NotFound, "post not found")
 	}
@@ -96,11 +81,11 @@ func (s *serverAPI) DeletePost(ctx context.Context, request *gen.DeletePostReque
 }
 
 func (s *serverAPI) GetPost(ctx context.Context, request *gen.GetPostRequest) (*gen.Post, error) {
-	postId, err := uuid.Parse(request.PostId)
+	postID, err := uuid.Parse(request.PostId)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, "post_id should be valid uuid")
 	}
-	post, err := s.post.GetPost(ctx, postId)
+	post, err := s.post.GetPost(ctx, postID)
 	if errors.Is(err, service.ErrPostNotFound) {
 		return nil, status.Errorf(codes.NotFound, "post not found")
 	}
@@ -108,8 +93,8 @@ func (s *serverAPI) GetPost(ctx context.Context, request *gen.GetPostRequest) (*
 		return nil, status.Errorf(codes.Internal, "internal error")
 	}
 	return &gen.Post{
-		Id:       post.Id.String(),
-		AuthorId: post.AuthorId.String(),
+		Id:       post.ID.String(),
+		AuthorId: post.AuthorID,
 		Content:  post.Content,
 	}, nil
 }
@@ -127,7 +112,7 @@ func (s *serverAPI) ListPosts(ctx context.Context, request *gen.ListPostsRequest
 	for _, post := range posts {
 		respPosts = append(
 			respPosts,
-			&gen.Post{Id: post.Id.String(), AuthorId: post.AuthorId.String(), Content: post.Content},
+			&gen.Post{Id: post.ID.String(), AuthorId: post.AuthorID, Content: post.Content},
 		)
 	}
 	return &gen.ListPostsResponse{
