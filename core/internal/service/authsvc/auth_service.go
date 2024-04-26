@@ -11,13 +11,12 @@ import (
 	"github.com/aedobrynin/soa-hw/core/internal/service"
 
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/google/uuid"
 )
 
 type Claims struct {
 	jwt.RegisteredClaims
 
-	UserID uuid.UUID `json:"user_id"`
+	UserID model.UserID `json:"user_id"`
 }
 
 type authService struct {
@@ -28,7 +27,7 @@ type authService struct {
 	refreshTokenDuration time.Duration
 }
 
-func (s *authService) makeToken(userID uuid.UUID, duration time.Duration) (string, error) {
+func (s *authService) makeToken(userID model.UserID, duration time.Duration) (string, error) {
 	now := time.Now().UTC()
 
 	claims := Claims{
@@ -43,7 +42,7 @@ func (s *authService) makeToken(userID uuid.UUID, duration time.Duration) (strin
 	return jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte(s.signingKey))
 }
 
-func (s *authService) newTokenPair(userID uuid.UUID) (*model.TokenPair, error) {
+func (s *authService) newTokenPair(userID model.UserID) (*model.TokenPair, error) {
 	accessToken, err := s.makeToken(userID, s.accessTokenDuration)
 	if err != nil {
 		return nil, err
@@ -87,7 +86,7 @@ func (s *authService) Login(ctx context.Context, login, password string) (*model
 func (s *authService) ValidateAndRefresh(
 	ctx context.Context,
 	tokenPair *model.TokenPair,
-) (new *model.TokenPair, userID *uuid.UUID, err error) {
+) (new *model.TokenPair, userID *model.UserID, err error) {
 	accessToken, err := s.parseTokenString(tokenPair.AccessToken)
 
 	switch v := err.(type) {

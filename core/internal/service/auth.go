@@ -5,8 +5,6 @@ import (
 	"time"
 
 	"github.com/aedobrynin/soa-hw/core/internal/model"
-
-	"github.com/google/uuid"
 )
 
 type AuthConfig struct {
@@ -20,5 +18,5 @@ type Auth interface {
 	ValidateAndRefresh(
 		ctx context.Context,
 		tokenPair *model.TokenPair,
-	) (new *model.TokenPair, userID *uuid.UUID, err error)
+	) (new *model.TokenPair, userID *model.UserID, err error)
 }
