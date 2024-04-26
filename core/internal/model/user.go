@@ -2,8 +2,10 @@ package model
 
 import "github.com/google/uuid"
 
+type UserId = uuid.UUID
+
 type User struct {
-	Id             uuid.UUID
+	Id             UserId
 	Login          string
 	HashedPassword []byte
 	Name           *string

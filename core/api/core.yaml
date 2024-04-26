@@ -19,8 +19,8 @@ paths:
                                 password:
                                     type: string
                             required:
-                              - login
-                              - password
+                                - login
+                                - password
             responses:
                 '200':
                     description: |
@@ -73,8 +73,8 @@ paths:
                                     minLength: 1
                                     maxLength: 25
                             required:
-                              - login
-                              - password
+                                - login
+                                - password
             responses:
                 '200':
                     description: OK
@@ -87,19 +87,18 @@ paths:
     /v1/users/{user_id}:
         patch:
             parameters:
-        # TODO: use refresh token too
-              - in: cookie
-                name: X_SESSION
-                schema:
-                    type: string
-                required: true
-              - name: user_id
-                in: path
-                description: User ID
-                required: true
-                schema:
-                    type: string
-                    format: uuid
+                # TODO: use refresh token too
+                - in: cookie
+                  name: X_SESSION
+                  schema:
+                      type: string
+                  required: true
+                - name: user_id
+                  in: path
+                  description: User ID
+                  required: true
+                  schema:
+                      type: string
             requestBody:
                 required: true
                 content:
@@ -139,12 +138,12 @@ paths:
         post:
             description: create new post
             parameters:
-        # TODO: use refresh token too
-              - in: cookie
-                name: X_SESSION
-                schema:
-                    type: string
-                required: true
+                # TODO: use refresh token too
+                - in: cookie
+                  name: X_SESSION
+                  schema:
+                      type: string
+                  required: true
             requestBody:
                 required: true
                 content:
@@ -156,7 +155,7 @@ paths:
                                     type: string
                                     minLength: 1
                             required:
-                              - content
+                                - content
             responses:
                 '200':
                     description: OK
@@ -173,19 +172,18 @@ paths:
         get:
             description: get post
             parameters:
-        # TODO: use refresh token too
-              - in: cookie
-                name: X_SESSION
-                schema:
-                    type: string
-                required: true
-              - name: post_id
-                in: path
-                description: Post ID
-                required: true
-                schema:
-                    type: string
-                    format: uuid
+                # TODO: use refresh token too
+                - in: cookie
+                  name: X_SESSION
+                  schema:
+                      type: string
+                  required: true
+                - name: post_id
+                  in: path
+                  description: Post ID
+                  required: true
+                  schema:
+                      type: string
             responses:
                 '200':
                     description: OK
@@ -207,19 +205,18 @@ paths:
         patch:
             description: edit post
             parameters:
-        # TODO: use refresh token too
-              - in: cookie
-                name: X_SESSION
-                schema:
-                    type: string
-                required: true
-              - name: post_id
-                in: path
-                description: Post ID
-                required: true
-                schema:
-                    type: string
-                    format: uuid
+                # TODO: use refresh token too
+                - in: cookie
+                  name: X_SESSION
+                  schema:
+                      type: string
+                  required: true
+                - name: post_id
+                  in: path
+                  description: Post ID
+                  required: true
+                  schema:
+                      type: string
             requestBody:
                 required: true
                 content:
@@ -231,7 +228,7 @@ paths:
                                     type: string
                                     minLength: 1
                             required:
-                              - content
+                                - content
             responses:
                 '200':
                     description: OK
@@ -251,19 +248,18 @@ paths:
         delete:
             description: delete post
             parameters:
-        # TODO: use refresh token too
-              - in: cookie
-                name: X_SESSION
-                schema:
-                    type: string
-                required: true
-              - name: post_id
-                in: path
-                description: Post ID
-                required: true
-                schema:
-                    type: string
-                    format: uuid
+                # TODO: use refresh token too
+                - in: cookie
+                  name: X_SESSION
+                  schema:
+                      type: string
+                  required: true
+                - name: post_id
+                  in: path
+                  description: Post ID
+                  required: true
+                  schema:
+                      type: string
             responses:
                 '200':
                     description: OK
@@ -274,28 +270,28 @@ paths:
                 '404':
                     description: Post not found
 
-  # TODO: better pagination
+    # TODO: better pagination
     /v1/posts/list:
         post:
             description: list posts
             parameters:
-        # TODO: use refresh token too
-              - in: cookie
-                name: X_SESSION
-                schema:
-                    type: string
-                required: true
-              - in: query
-                name: page_size
-                schema:
-                    type: integer
-                default: 5
-                required: true
-              - in: query
-                name: page_token
-                schema:
-                    type: string
-                required: false
+                # TODO: use refresh token too
+                - in: cookie
+                  name: X_SESSION
+                  schema:
+                      type: string
+                  required: true
+                - in: query
+                  name: page_size
+                  schema:
+                      type: integer
+                  default: 5
+                  required: true
+                - in: query
+                  name: page_token
+                  schema:
+                      type: string
+                  required: false
             responses:
                 '200':
                     description: OK
@@ -311,8 +307,8 @@ paths:
                                     next_page_token:
                                         type: string
                                 required:
-                                  - posts
-                                  - next_page_token
+                                    - posts
+                                    - next_page_token
                 '401':
                     description: Unathorized
                 '422':
@@ -330,20 +326,18 @@ components:
                 error:
                     type: string
             required:
-              - error
+                - error
 
         Post:
             type: object
             properties:
                 id:
                     type: string
-                    format: uuid
                 content:
                     type: string
                 author_id:
                     type: string
-                    format: uuid
             required:
-              - id
-              - content
-              - author_id
+                - id
+                - content
+                - author_id

@@ -12,7 +12,6 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/oapi-codegen/runtime"
 	strictnethttp "github.com/oapi-codegen/runtime/strictmiddleware/nethttp"
-	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
 // ErrorMessage defines model for ErrorMessage.
@@ -22,9 +21,9 @@ type ErrorMessage struct {
 
 // Post defines model for Post.
 type Post struct {
-	AuthorId openapi_types.UUID `json:"author_id"`
-	Content  string             `json:"content"`
-	Id       openapi_types.UUID `json:"id"`
+	AuthorId string `json:"author_id"`
+	Content  string `json:"content"`
+	Id       string `json:"id"`
 }
 
 // PostV1AuthJSONBody defines parameters for PostV1Auth.
@@ -121,19 +120,19 @@ type ServerInterface interface {
 	PostV1PostsList(w http.ResponseWriter, r *http.Request, params PostV1PostsListParams)
 
 	// (DELETE /v1/posts/{post_id})
-	DeleteV1PostsPostId(w http.ResponseWriter, r *http.Request, postId openapi_types.UUID, params DeleteV1PostsPostIdParams)
+	DeleteV1PostsPostId(w http.ResponseWriter, r *http.Request, postId string, params DeleteV1PostsPostIdParams)
 
 	// (GET /v1/posts/{post_id})
-	GetV1PostsPostId(w http.ResponseWriter, r *http.Request, postId openapi_types.UUID, params GetV1PostsPostIdParams)
+	GetV1PostsPostId(w http.ResponseWriter, r *http.Request, postId string, params GetV1PostsPostIdParams)
 
 	// (PATCH /v1/posts/{post_id})
-	PatchV1PostsPostId(w http.ResponseWriter, r *http.Request, postId openapi_types.UUID, params PatchV1PostsPostIdParams)
+	PatchV1PostsPostId(w http.ResponseWriter, r *http.Request, postId string, params PatchV1PostsPostIdParams)
 
 	// (POST /v1/users)
 	PostV1Users(w http.ResponseWriter, r *http.Request)
 
 	// (PATCH /v1/users/{user_id})
-	PatchV1UsersUserId(w http.ResponseWriter, r *http.Request, userId openapi_types.UUID, params PatchV1UsersUserIdParams)
+	PatchV1UsersUserId(w http.ResponseWriter, r *http.Request, userId string, params PatchV1UsersUserIdParams)
 }
 
 // Unimplemented server implementation that returns http.StatusNotImplemented for each endpoint.
@@ -157,17 +156,17 @@ func (_ Unimplemented) PostV1PostsList(w http.ResponseWriter, r *http.Request, p
 }
 
 // (DELETE /v1/posts/{post_id})
-func (_ Unimplemented) DeleteV1PostsPostId(w http.ResponseWriter, r *http.Request, postId openapi_types.UUID, params DeleteV1PostsPostIdParams) {
+func (_ Unimplemented) DeleteV1PostsPostId(w http.ResponseWriter, r *http.Request, postId string, params DeleteV1PostsPostIdParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
 // (GET /v1/posts/{post_id})
-func (_ Unimplemented) GetV1PostsPostId(w http.ResponseWriter, r *http.Request, postId openapi_types.UUID, params GetV1PostsPostIdParams) {
+func (_ Unimplemented) GetV1PostsPostId(w http.ResponseWriter, r *http.Request, postId string, params GetV1PostsPostIdParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
 // (PATCH /v1/posts/{post_id})
-func (_ Unimplemented) PatchV1PostsPostId(w http.ResponseWriter, r *http.Request, postId openapi_types.UUID, params PatchV1PostsPostIdParams) {
+func (_ Unimplemented) PatchV1PostsPostId(w http.ResponseWriter, r *http.Request, postId string, params PatchV1PostsPostIdParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -177,7 +176,7 @@ func (_ Unimplemented) PostV1Users(w http.ResponseWriter, r *http.Request) {
 }
 
 // (PATCH /v1/users/{user_id})
-func (_ Unimplemented) PatchV1UsersUserId(w http.ResponseWriter, r *http.Request, userId openapi_types.UUID, params PatchV1UsersUserIdParams) {
+func (_ Unimplemented) PatchV1UsersUserId(w http.ResponseWriter, r *http.Request, userId string, params PatchV1UsersUserIdParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -307,7 +306,7 @@ func (siw *ServerInterfaceWrapper) DeleteV1PostsPostId(w http.ResponseWriter, r 
 	var err error
 
 	// ------------- Path parameter "post_id" -------------
-	var postId openapi_types.UUID
+	var postId string
 
 	err = runtime.BindStyledParameterWithLocation("simple", false, "post_id", runtime.ParamLocationPath, chi.URLParam(r, "post_id"), &postId)
 	if err != nil {
@@ -352,7 +351,7 @@ func (siw *ServerInterfaceWrapper) GetV1PostsPostId(w http.ResponseWriter, r *ht
 	var err error
 
 	// ------------- Path parameter "post_id" -------------
-	var postId openapi_types.UUID
+	var postId string
 
 	err = runtime.BindStyledParameterWithLocation("simple", false, "post_id", runtime.ParamLocationPath, chi.URLParam(r, "post_id"), &postId)
 	if err != nil {
@@ -397,7 +396,7 @@ func (siw *ServerInterfaceWrapper) PatchV1PostsPostId(w http.ResponseWriter, r *
 	var err error
 
 	// ------------- Path parameter "post_id" -------------
-	var postId openapi_types.UUID
+	var postId string
 
 	err = runtime.BindStyledParameterWithLocation("simple", false, "post_id", runtime.ParamLocationPath, chi.URLParam(r, "post_id"), &postId)
 	if err != nil {
@@ -457,7 +456,7 @@ func (siw *ServerInterfaceWrapper) PatchV1UsersUserId(w http.ResponseWriter, r *
 	var err error
 
 	// ------------- Path parameter "user_id" -------------
-	var userId openapi_types.UUID
+	var userId string
 
 	err = runtime.BindStyledParameterWithLocation("simple", false, "user_id", runtime.ParamLocationPath, chi.URLParam(r, "user_id"), &userId)
 	if err != nil {
@@ -739,7 +738,7 @@ func (response PostV1PostsList422JSONResponse) VisitPostV1PostsListResponse(w ht
 }
 
 type DeleteV1PostsPostIdRequestObject struct {
-	PostId openapi_types.UUID `json:"post_id"`
+	PostId string `json:"post_id"`
 	Params DeleteV1PostsPostIdParams
 }
 
@@ -780,7 +779,7 @@ func (response DeleteV1PostsPostId404Response) VisitDeleteV1PostsPostIdResponse(
 }
 
 type GetV1PostsPostIdRequestObject struct {
-	PostId openapi_types.UUID `json:"post_id"`
+	PostId string `json:"post_id"`
 	Params GetV1PostsPostIdParams
 }
 
@@ -823,7 +822,7 @@ func (response GetV1PostsPostId422JSONResponse) VisitGetV1PostsPostIdResponse(w 
 }
 
 type PatchV1PostsPostIdRequestObject struct {
-	PostId openapi_types.UUID `json:"post_id"`
+	PostId string `json:"post_id"`
 	Params PatchV1PostsPostIdParams
 	Body   *PatchV1PostsPostIdJSONRequestBody
 }
@@ -899,7 +898,7 @@ func (response PostV1Users422JSONResponse) VisitPostV1UsersResponse(w http.Respo
 }
 
 type PatchV1UsersUserIdRequestObject struct {
-	UserId openapi_types.UUID `json:"user_id"`
+	UserId string `json:"user_id"`
 	Params PatchV1UsersUserIdParams
 	Body   *PatchV1UsersUserIdJSONRequestBody
 }
@@ -1081,7 +1080,7 @@ func (sh *strictHandler) PostV1PostsList(w http.ResponseWriter, r *http.Request,
 }
 
 // DeleteV1PostsPostId operation middleware
-func (sh *strictHandler) DeleteV1PostsPostId(w http.ResponseWriter, r *http.Request, postId openapi_types.UUID, params DeleteV1PostsPostIdParams) {
+func (sh *strictHandler) DeleteV1PostsPostId(w http.ResponseWriter, r *http.Request, postId string, params DeleteV1PostsPostIdParams) {
 	var request DeleteV1PostsPostIdRequestObject
 
 	request.PostId = postId
@@ -1108,7 +1107,7 @@ func (sh *strictHandler) DeleteV1PostsPostId(w http.ResponseWriter, r *http.Requ
 }
 
 // GetV1PostsPostId operation middleware
-func (sh *strictHandler) GetV1PostsPostId(w http.ResponseWriter, r *http.Request, postId openapi_types.UUID, params GetV1PostsPostIdParams) {
+func (sh *strictHandler) GetV1PostsPostId(w http.ResponseWriter, r *http.Request, postId string, params GetV1PostsPostIdParams) {
 	var request GetV1PostsPostIdRequestObject
 
 	request.PostId = postId
@@ -1135,7 +1134,7 @@ func (sh *strictHandler) GetV1PostsPostId(w http.ResponseWriter, r *http.Request
 }
 
 // PatchV1PostsPostId operation middleware
-func (sh *strictHandler) PatchV1PostsPostId(w http.ResponseWriter, r *http.Request, postId openapi_types.UUID, params PatchV1PostsPostIdParams) {
+func (sh *strictHandler) PatchV1PostsPostId(w http.ResponseWriter, r *http.Request, postId string, params PatchV1PostsPostIdParams) {
 	var request PatchV1PostsPostIdRequestObject
 
 	request.PostId = postId
@@ -1200,7 +1199,7 @@ func (sh *strictHandler) PostV1Users(w http.ResponseWriter, r *http.Request) {
 }
 
 // PatchV1UsersUserId operation middleware
-func (sh *strictHandler) PatchV1UsersUserId(w http.ResponseWriter, r *http.Request, userId openapi_types.UUID, params PatchV1UsersUserIdParams) {
+func (sh *strictHandler) PatchV1UsersUserId(w http.ResponseWriter, r *http.Request, userId string, params PatchV1UsersUserIdParams) {
 	var request PatchV1UsersUserIdRequestObject
 
 	request.UserId = userId
