@@ -6,9 +6,13 @@ import (
 	"github.com/google/uuid"
 )
 
+type UserID = string
+
+type PostID = uuid.UUID
+
 type Post struct {
-	Id        uuid.UUID
-	AuthorId  uuid.UUID
+	ID        PostID
+	AuthorID  UserID
 	Content   string
 	CreatedTs time.Time
 	UpdatedTs time.Time

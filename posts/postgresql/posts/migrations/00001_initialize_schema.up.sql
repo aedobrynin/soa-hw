@@ -2,7 +2,7 @@ CREATE SCHEMA IF NOT EXISTS posts;
 
 CREATE TABLE IF NOT EXISTS posts.posts (
    id            UUID   NOT NULL PRIMARY KEY,
-   author_id     UUID   NOT NULL,
+   author_id     TEXT   NOT NULL,
    content       TEXT   NOT NULL,
    created_ts    TIMESTAMPTZ NOT NULL DEFAULT now(),
    updated_ts    TIMESTAMPTZ NOT NULL DEFAULT now()

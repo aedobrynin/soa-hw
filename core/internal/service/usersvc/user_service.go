@@ -24,22 +24,22 @@ func (s *userSvc) SignUp(ctx context.Context, request service.SignUpRequest) err
 		return err
 	}
 	if request.Name != nil {
-		if err := validateName(*request.Name); err != nil {
+		if err = validateName(*request.Name); err != nil {
 			return err
 		}
 	}
 	if request.Surname != nil {
-		if err := validateSurname(*request.Surname); err != nil {
+		if err = validateSurname(*request.Surname); err != nil {
 			return err
 		}
 	}
 	if request.Email != nil {
-		if err := validateEmail(*request.Email); err != nil {
+		if err = validateEmail(*request.Email); err != nil {
 			return err
 		}
 	}
 	if request.Phone != nil {
-		if err := validatePhone(*request.Phone); err != nil {
+		if err = validatePhone(*request.Phone); err != nil {
 			return err
 		}
 	}
@@ -83,7 +83,7 @@ func (s *userSvc) Edit(ctx context.Context, request service.EditRequest) error {
 	err := s.repo.UpdateUser(
 		ctx,
 		repo.UpdateRequest{
-			UserId:  request.UserId,
+			UserID:  request.UserID,
 			Name:    request.Name,
 			Surname: request.Surname,
 			Email:   request.Email,

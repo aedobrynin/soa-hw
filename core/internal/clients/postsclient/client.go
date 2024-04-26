@@ -26,24 +26,24 @@ func convertToInternal(post *gen.Post) (*model.Post, error) {
 	if post == nil {
 		return nil, nil
 	}
-	authorId, err := uuid.Parse(post.AuthorId)
+	authorID, err := uuid.Parse(post.AuthorId)
 	if err != nil {
 		return nil, err
 	}
 
 	return &model.Post{
-		Id:       post.Id,
-		AuthorId: authorId,
+		ID:       post.Id,
+		AuthorID: authorID,
 		Content:  post.Content,
 	}, nil
 }
 
 func (c *PostsClient) CreatePost(
 	ctx context.Context,
-	authorId model.UserId,
+	authorID model.UserID,
 	content string,
-) (model.PostId, error) {
-	resp, err := c.api.CreatePost(ctx, &gen.CreatePostRequest{AuthorId: authorId.String(), Content: content})
+) (model.PostID, error) {
+	resp, err := c.api.CreatePost(ctx, &gen.CreatePostRequest{AuthorId: authorID.String(), Content: content})
 	if err != nil {
 		// TODO: is this bad?
 		if status.Code(err) == codes.InvalidArgument {
@@ -56,13 +56,13 @@ func (c *PostsClient) CreatePost(
 
 func (c *PostsClient) EditPost(
 	ctx context.Context,
-	postId model.PostId,
-	editorId model.UserId,
+	postID model.PostID,
+	editorID model.UserID,
 	newContent string,
 ) error {
 	_, err := c.api.EditPost(
 		ctx,
-		&gen.EditPostRequest{PostId: postId, EditorId: editorId.String(), NewContent: newContent},
+		&gen.EditPostRequest{PostId: postID, EditorId: editorID.String(), NewContent: newContent},
 	)
 	if err != nil {
 		// TODO: is this bad?
@@ -82,12 +82,12 @@ func (c *PostsClient) EditPost(
 
 func (c *PostsClient) DeletePost(
 	ctx context.Context,
-	postId model.PostId,
-	deleterId model.UserId,
+	postID model.PostID,
+	deleterID model.UserID,
 ) error {
 	_, err := c.api.DeletePost(
 		ctx,
-		&gen.DeletePostRequest{PostId: postId, DeleterId: deleterId.String()},
+		&gen.DeletePostRequest{PostId: postID, DeleterId: deleterID.String()},
 	)
 	if err != nil {
 		if status.Code(err) == codes.NotFound {
@@ -103,9 +103,9 @@ func (c *PostsClient) DeletePost(
 
 func (c *PostsClient) GetPost(
 	ctx context.Context,
-	postId model.PostId,
+	postID model.PostID,
 ) (*model.Post, error) {
-	post, err := c.api.GetPost(ctx, &gen.GetPostRequest{PostId: postId})
+	post, err := c.api.GetPost(ctx, &gen.GetPostRequest{PostId: postID})
 	if err != nil {
 		if status.Code(err) == codes.NotFound {
 			return nil, clients.ErrPostNotFound

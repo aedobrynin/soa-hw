@@ -1,9 +1,9 @@
 package model
 
-type PostId = string
+type PostID = string
 
 type Post struct {
-	Id       PostId
-	AuthorId UserId
+	ID       PostID
+	AuthorID UserID
 	Content  string
 }

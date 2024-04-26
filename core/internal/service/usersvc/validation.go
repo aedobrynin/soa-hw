@@ -9,7 +9,7 @@ import (
 	"github.com/aedobrynin/soa-hw/core/internal/service"
 )
 
-func isAsciiLetter(r rune) bool {
+func isASCIILetter(r rune) bool {
 	return ('a' <= r && r <= 'z') || ('A' <= r && r <= 'Z')
 }
 
@@ -37,7 +37,7 @@ var (
 )
 
 func isBadRuneForPassword(r rune) bool {
-	return !(isAsciiLetter(r) || unicode.IsDigit(r) || slices.Contains(validPasswordSymbols, r))
+	return !(isASCIILetter(r) || unicode.IsDigit(r) || slices.Contains(validPasswordSymbols, r))
 }
 
 func validatePassword(password string) error {
@@ -51,7 +51,7 @@ func validatePassword(password string) error {
 }
 
 func isBadRuneForLogin(r rune) bool {
-	return !(isAsciiLetter(r) || unicode.IsDigit(r) || r == '_')
+	return !(isASCIILetter(r) || unicode.IsDigit(r) || r == '_')
 }
 
 func validateLogin(login string) error {

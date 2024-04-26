@@ -93,19 +93,19 @@ func (a *adapter) PatchV1UsersUserId(
 	request codegen.PatchV1UsersUserIdRequestObject,
 ) (codegen.PatchV1UsersUserIdResponseObject, error) {
 	// TODO: use refresh token too
-	_, userId, err := a.authService.ValidateAndRefresh(
+	_, userID, err := a.authService.ValidateAndRefresh(
 		ctx,
 		&model.TokenPair{AccessToken: request.Params.XSESSION, RefreshToken: ""},
 	)
 	switch {
-	case errors.Is(err, service.ErrUnsupportedClaims) || errors.Is(err, service.ErrUnauthorized) || request.UserId != userId.String():
+	case errors.Is(err, service.ErrUnsupportedClaims) || errors.Is(err, service.ErrUnauthorized) || request.UserId != userID.String():
 		return codegen.PatchV1UsersUserId401Response{}, nil
 	case err != nil:
 		return nil, err
 	}
 
 	err = a.userService.Edit(ctx, service.EditRequest{
-		UserId:  *userId,
+		UserID:  *userID,
 		Name:    request.Body.Name,
 		Surname: request.Body.Surname,
 		Email:   request.Body.Email,
@@ -132,7 +132,7 @@ func (a *adapter) PostV1Posts(
 ) (codegen.PostV1PostsResponseObject, error) {
 	// TODO: use refresh token too
 	// TODO: make it helper function
-	_, userId, err := a.authService.ValidateAndRefresh(
+	_, userID, err := a.authService.ValidateAndRefresh(
 		ctx,
 		&model.TokenPair{AccessToken: request.Params.XSESSION, RefreshToken: ""},
 	)
@@ -143,7 +143,7 @@ func (a *adapter) PostV1Posts(
 		return nil, err
 	}
 
-	_, err = a.postsClient.CreatePost(ctx, *userId, request.Body.Content)
+	_, err = a.postsClient.CreatePost(ctx, *userID, request.Body.Content)
 	if errors.Is(err, clients.ErrContentIsEmpty) {
 		return codegen.PostV1Posts422JSONResponse(codegen.ErrorMessage{Error: err.Error()}), nil
 	}
@@ -160,7 +160,7 @@ func (a *adapter) DeleteV1PostsPostId(
 ) (codegen.DeleteV1PostsPostIdResponseObject, error) {
 	// TODO: use refresh token too
 	// TODO: make it helper function
-	_, userId, err := a.authService.ValidateAndRefresh(
+	_, userID, err := a.authService.ValidateAndRefresh(
 		ctx,
 		&model.TokenPair{AccessToken: request.Params.XSESSION, RefreshToken: ""},
 	)
@@ -171,7 +171,7 @@ func (a *adapter) DeleteV1PostsPostId(
 		return nil, err
 	}
 
-	err = a.postsClient.DeletePost(ctx, request.PostId, *userId)
+	err = a.postsClient.DeletePost(ctx, request.PostId, *userID)
 	if errors.Is(err, clients.ErrPostNotFound) {
 		return codegen.DeleteV1PostsPostId404Response{}, nil
 	}
@@ -188,7 +188,7 @@ func (a *adapter) PatchV1PostsPostId(
 ) (codegen.PatchV1PostsPostIdResponseObject, error) {
 	// TODO: use refresh token too
 	// TODO: make it helper function
-	_, userId, err := a.authService.ValidateAndRefresh(
+	_, userID, err := a.authService.ValidateAndRefresh(
 		ctx,
 		&model.TokenPair{AccessToken: request.Params.XSESSION, RefreshToken: ""},
 	)
@@ -199,7 +199,7 @@ func (a *adapter) PatchV1PostsPostId(
 		return nil, err
 	}
 
-	err = a.postsClient.EditPost(ctx, request.PostId, *userId, request.Body.Content)
+	err = a.postsClient.EditPost(ctx, request.PostId, *userID, request.Body.Content)
 	if errors.Is(err, clients.ErrPostNotFound) {
 		return codegen.PatchV1PostsPostId404Response{}, nil
 	}
@@ -235,7 +235,7 @@ func (a *adapter) GetV1PostsPostId(
 		return codegen.GetV1PostsPostId404Response{}, nil
 	}
 	return codegen.GetV1PostsPostId200JSONResponse(
-		codegen.Post{Id: post.Id, AuthorId: post.AuthorId.String(), Content: post.Content},
+		codegen.Post{Id: post.ID, AuthorId: post.AuthorID.String(), Content: post.Content},
 	), nil
 }
 
@@ -280,7 +280,7 @@ func (a *adapter) PostV1PostsList(
 	for _, post := range posts {
 		respPosts = append(
 			respPosts,
-			codegen.Post{Id: post.Id, AuthorId: post.AuthorId.String(), Content: post.Content},
+			codegen.Post{Id: post.ID, AuthorId: post.AuthorID.String(), Content: post.Content},
 		)
 	}
 	return codegen.PostV1PostsList200JSONResponse{NextPageToken: nextPageToken, Posts: respPosts}, nil
@@ -293,7 +293,7 @@ func (a *adapter) Serve() error {
 	}
 	a.logger = logger
 
-	handler_opts := codegen.StrictHTTPServerOptions{
+	handlerOpts := codegen.StrictHTTPServerOptions{
 		RequestErrorHandlerFunc: func(w http.ResponseWriter, r *http.Request, err error) {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 		},
@@ -302,7 +302,7 @@ func (a *adapter) Serve() error {
 			http.Error(w, "server got itself in trouble", http.StatusInternalServerError)
 		},
 	}
-	strict_handler := codegen.NewStrictHandlerWithOptions(a, make([]codegen.StrictMiddlewareFunc, 0), handler_opts)
+	strictHandler := codegen.NewStrictHandlerWithOptions(a, make([]codegen.StrictMiddlewareFunc, 0), handlerOpts)
 	options := codegen.ChiServerOptions{
 		BaseURL:     a.cfg.BasePath,
 		BaseRouter:  chi.NewRouter(),
@@ -310,7 +310,7 @@ func (a *adapter) Serve() error {
 	}
 
 	a.server = &http.Server{
-		Handler: codegen.HandlerWithOptions(strict_handler, options),
+		Handler: codegen.HandlerWithOptions(strictHandler, options),
 		Addr:    a.cfg.ServeAddress,
 		BaseContext: func(_ net.Listener) context.Context {
 			return zapctx.WithLogger(context.Background(), logger)

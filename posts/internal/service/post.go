@@ -3,15 +3,13 @@ package service
 import (
 	"context"
 
-	"github.com/google/uuid"
-
 	"github.com/aedobrynin/soa-hw/posts/internal/model"
 )
 
 type Post interface {
-	AddPost(ctx context.Context, authorId uuid.UUID, content string) (postId uuid.UUID, err error)
-	EditPost(ctx context.Context, postId uuid.UUID, editorId uuid.UUID, newContent string) error
-	DeletePost(ctx context.Context, postId uuid.UUID, deleterId uuid.UUID) error
-	GetPost(ctx context.Context, postId uuid.UUID) (*model.Post, error)
+	AddPost(ctx context.Context, authorID model.UserID, content string) (postID model.PostID, err error)
+	EditPost(ctx context.Context, postID model.PostID, editorID model.UserID, newContent string) error
+	DeletePost(ctx context.Context, postID model.PostID, deleterID model.UserID) error
+	GetPost(ctx context.Context, postID model.PostID) (*model.Post, error)
 	ListPosts(ctx context.Context, pageSize int, pageToken string) (posts []model.Post, newPageToken string, err error)
 }
