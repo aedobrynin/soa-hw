@@ -25,7 +25,7 @@ type userRepo struct {
 	pgxPool *pgxpool.Pool
 }
 
-func generateUserID() uuid.UUID {
+func generateUserID() model.UserID {
 	return uuid.New()
 }
 

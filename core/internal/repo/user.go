@@ -4,8 +4,6 @@ import (
 	"context"
 
 	"github.com/aedobrynin/soa-hw/core/internal/model"
-
-	"github.com/google/uuid"
 )
 
 type AddRequest struct {
@@ -18,7 +16,7 @@ type AddRequest struct {
 }
 
 type UpdateRequest struct {
-	UserID  uuid.UUID
+	UserID  model.UserID
 	Name    *string
 	Surname *string
 	Email   *string
