@@ -135,4 +135,6 @@ services:
   kafka-cli:
     image: conitasgmbh/kafka-cli
     command: ["/bin/sh", "-c", "while true; do sleep 10; done"]
-  
+    depends_on:
+      kafka:
+        condition: service_healthy
