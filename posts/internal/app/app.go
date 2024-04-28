@@ -91,7 +91,7 @@ func initDB(ctx context.Context, config *DatabaseConfig) (*pgxpool.Pool, error) 
 		return nil, fmt.Errorf("error on migrations creation step: %v", err)
 	}
 
-	if err := m.Up(); err != nil {
+	if err := m.Up(); err != migrate.ErrNoChange {
 		return nil, fmt.Errorf("error on migrations up step: %v", err)
 	}
 

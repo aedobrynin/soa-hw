@@ -119,7 +119,7 @@ func applyMigrations(config *DatabaseConfig) error {
 		return fmt.Errorf("error on migrations creation step: %v", err)
 	}
 
-	if err := m.Up(); err != nil {
+	if err := m.Up(); err != migrate.ErrNoChange {
 		return fmt.Errorf("error on migrations up step: %v", err)
 	}
 	return nil
