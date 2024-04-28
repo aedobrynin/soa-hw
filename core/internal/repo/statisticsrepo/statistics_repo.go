@@ -65,15 +65,15 @@ func New(cfg *config.KafkaConfig) repo.Statistics {
 	postsLikesWriter := kafka.NewWriter(kafka.WriterConfig{
 		Brokers:   []string{cfg.BrokerAddr},
 		Topic:     cfg.PostsLikesTopicName,
-		Async:     false, // TODO: myb use?
-		BatchSize: 0,     // TODO: myb use?
+		Async:     true,
+		BatchSize: 0, // TODO: myb use?
 	})
 
 	postsViewsWriter := kafka.NewWriter(kafka.WriterConfig{
 		Brokers:   []string{cfg.BrokerAddr},
 		Topic:     cfg.PostsViewsTopicName,
-		Async:     false, // TODO: myb use?
-		BatchSize: 0,     // TODO: myb use?
+		Async:     true,
+		BatchSize: 0, // TODO: myb use?
 	})
 	return &StatisticsRepo{
 		postsLikesWriter: postsLikesWriter,
