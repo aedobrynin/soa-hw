@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/aedobrynin/soa-hw/core/internal/app"
+	"github.com/aedobrynin/soa-hw/core/internal/config"
 )
 
 func getConfigPath() string {
@@ -17,7 +18,7 @@ func getConfigPath() string {
 }
 
 func main() {
-	config, err := app.NewConfig(getConfigPath())
+	config, err := config.NewConfig(getConfigPath())
 	if err != nil {
 		log.Fatal(err)
 	}

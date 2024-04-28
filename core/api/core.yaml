@@ -270,6 +270,50 @@ paths:
                 '404':
                     description: Post not found
 
+    /v1/posts/{post_id}/mark_liked:
+        post:
+            description: mark post as liked
+            parameters:
+                # TODO: use refresh token too
+                - in: cookie
+                  name: X_SESSION
+                  schema:
+                      type: string
+                  required: true
+                - name: post_id
+                  in: path
+                  description: Post ID
+                  required: true
+                  schema:
+                      type: string
+            responses:
+                '200':
+                    description: OK
+                '401':
+                    description: Unathorized
+
+    /v1/posts/{post_id}/mark_viewed:
+        post:
+            description: mark post as viewed
+            parameters:
+                # TODO: use refresh token too
+                - in: cookie
+                  name: X_SESSION
+                  schema:
+                      type: string
+                  required: true
+                - name: post_id
+                  in: path
+                  description: Post ID
+                  required: true
+                  schema:
+                      type: string
+            responses:
+                '200':
+                    description: OK
+                '401':
+                    description: Unathorized
+
     # TODO: better pagination
     /v1/posts/list:
         post:
