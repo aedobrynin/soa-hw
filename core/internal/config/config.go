@@ -1,4 +1,4 @@
-package app
+package config
 
 import (
 	"os"
@@ -12,19 +12,33 @@ import (
 )
 
 const (
+	// AppConfig defaults
+	DefaultDebug           = false
+	DefaultShutdownTimeout = 20 * time.Second
+
+	// DatabaseConfig defaults
+	DefaultDSN           = "dsn://"
+	DefaultMigrationsDir = "file://postgresql/core/migrations/"
+
+	// HTTP defaults (TODO: myb move to httpadapter module?)
 	DefaultServeAddress         = "localhost:3000"
-	DefaultShutdownTimeout      = 20 * time.Second
 	DefaultBasePath             = "/"
 	DefaultAccessTokenCookie    = "access_token"
 	DefaultRefreshTokenCookie   = "refresh_token"
 	DefaultSigningKey           = "qwerty"
 	DefaultAccessTokenDuration  = 1 * time.Minute
 	DefaultRefreshTokenDuration = 1 * time.Hour
-	DefaultDSN                  = "dsn://"
-	DefaultMigrationsDir        = "file://postgresql/core/migrations/"
-	DefaultPostsAddr            = "posts_service:8080"
-	DefaultPostsTimeout         = 5 * time.Second
-	DefaultPostsRetriesCount    = 3
+	DefaultUseTLS               = false
+
+	// PostsConfig defaults (TODO: myb move to postsclient module?)
+	DefaultPostsAddr         = "posts_service:8080"
+	DefaultPostsTimeout      = 5 * time.Second
+	DefaultPostsRetriesCount = 3
+
+	// KafkaConfig defaults
+	DefaultKafkaBrokerAddr          = "kafka:9092"
+	DefaultKafkaPostsViewsTopicName = "posts_views"
+	DefaultKafkaPostsLikesTopicName = "posts_likes"
 )
 
 type AppConfig struct {
@@ -37,10 +51,17 @@ type DatabaseConfig struct {
 	MigrationsDir string `yaml:"migrations_dir"`
 }
 
+type KafkaConfig struct {
+	BrokerAddr          string
+	PostsViewsTopicName string
+	PostsLikesTopicName string
+}
+
 type Config struct {
 	App      AppConfig          `yaml:"app"`
 	Database DatabaseConfig     `yaml:"database"`
 	HTTP     httpadapter.Config `yaml:"http"`
+	Kafka    KafkaConfig        `yaml:"kafka"`
 
 	Auth  service.AuthConfig            `yaml:"auth"`
 	Posts postsclient.PostsClientConfig `yaml:"posts_client"`
@@ -54,7 +75,7 @@ func NewConfig(fileName string) (*Config, error) {
 
 	cnf := Config{
 		App: AppConfig{
-			Debug:           false,
+			Debug:           DefaultDebug,
 			ShutdownTimeout: DefaultShutdownTimeout,
 		},
 		Database: DatabaseConfig{
@@ -64,9 +85,14 @@ func NewConfig(fileName string) (*Config, error) {
 		HTTP: httpadapter.Config{
 			ServeAddress:       DefaultServeAddress,
 			BasePath:           DefaultBasePath,
-			UseTLS:             false,
+			UseTLS:             DefaultUseTLS,
 			AccessTokenCookie:  DefaultAccessTokenCookie,
 			RefreshTokenCookie: DefaultRefreshTokenCookie,
+		},
+		Kafka: KafkaConfig{
+			BrokerAddr:          DefaultKafkaBrokerAddr,
+			PostsViewsTopicName: DefaultKafkaPostsViewsTopicName,
+			PostsLikesTopicName: DefaultKafkaPostsLikesTopicName,
 		},
 		Auth: service.AuthConfig{
 			SigningKey:           DefaultSigningKey,

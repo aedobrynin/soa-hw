@@ -15,15 +15,27 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 
 	"github.com/aedobrynin/soa-hw/core/internal/clients/postsclient"
+	"github.com/aedobrynin/soa-hw/core/internal/config"
 	"github.com/aedobrynin/soa-hw/core/internal/httpadapter"
+	"github.com/aedobrynin/soa-hw/core/internal/repo"
+	"github.com/aedobrynin/soa-hw/core/internal/repo/statisticsrepo"
 	"github.com/aedobrynin/soa-hw/core/internal/repo/userrepo"
+	"github.com/aedobrynin/soa-hw/core/internal/service"
 	"github.com/aedobrynin/soa-hw/core/internal/service/authsvc"
+	"github.com/aedobrynin/soa-hw/core/internal/service/statisticssvc"
 	"github.com/aedobrynin/soa-hw/core/internal/service/usersvc"
 )
 
 type app struct {
-	config      *Config
+	config      *config.Config
 	httpAdapter httpadapter.Adapter
+
+	userRepo       repo.User
+	statisticsRepo repo.Statistics
+
+	userService       service.User
+	authService       service.Auth
+	statisticsService service.Statistics
 }
 
 func (a *app) Serve() error {
@@ -49,9 +61,10 @@ func (a *app) Shutdown() {
 	defer cancel()
 
 	a.httpAdapter.Shutdown(ctx)
+	a.statisticsRepo.Stop(ctx)
 }
 
-func New(config *Config) (App, error) {
+func New(config *config.Config) (App, error) {
 	pgxPool, err := initDB(context.Background(), &config.Database)
 	if err != nil {
 		return nil, fmt.Errorf("error on db initialization: %v", err)
@@ -66,15 +79,29 @@ func New(config *Config) (App, error) {
 		return nil, fmt.Errorf("error on posts client initialization: %v", err)
 	}
 
+	statisticsRepo := statisticsrepo.New(&config.Kafka)
+	statisticsService := statisticssvc.New(statisticsRepo)
+
 	a := &app{
-		config:      config,
-		httpAdapter: httpadapter.NewAdapter(&config.HTTP, authService, userService, postsClient),
+		config:            config,
+		userRepo:          userRepo,
+		statisticsRepo:    statisticsRepo,
+		authService:       authService,
+		userService:       userService,
+		statisticsService: statisticsService,
+		httpAdapter: httpadapter.NewAdapter(
+			&config.HTTP,
+			authService,
+			userService,
+			statisticsService,
+			postsClient,
+		),
 	}
 
 	return a, nil
 }
 
-func initDB(ctx context.Context, config *DatabaseConfig) (*pgxpool.Pool, error) {
+func initDB(ctx context.Context, config *config.DatabaseConfig) (*pgxpool.Pool, error) {
 	pgxConfig, err := pgxpool.ParseConfig(config.DSN)
 	if err != nil {
 		return nil, err

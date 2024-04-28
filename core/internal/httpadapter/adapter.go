@@ -21,8 +21,9 @@ import (
 type adapter struct {
 	cfg *Config
 
-	authService service.Auth
-	userService service.User
+	authService       service.Auth
+	userService       service.User
+	statisticsService service.Statistics
 
 	postsClient clients.PostsClient
 
@@ -286,6 +287,56 @@ func (a *adapter) PostV1PostsList(
 	return codegen.PostV1PostsList200JSONResponse{NextPageToken: nextPageToken, Posts: respPosts}, nil
 }
 
+// (POST /v1/posts/{post_id}/mark_liked)
+func (a *adapter) PostV1PostsPostIdMarkLiked(
+	ctx context.Context,
+	request codegen.PostV1PostsPostIdMarkLikedRequestObject,
+) (codegen.PostV1PostsPostIdMarkLikedResponseObject, error) {
+	// TODO: use refresh token too
+	// TODO: make it helper function
+	_, userID, err := a.authService.ValidateAndRefresh(
+		ctx,
+		&model.TokenPair{AccessToken: request.Params.XSESSION, RefreshToken: ""},
+	)
+	switch {
+	case errors.Is(err, service.ErrUnsupportedClaims) || errors.Is(err, service.ErrUnauthorized):
+		return codegen.PostV1PostsPostIdMarkLiked401Response{}, nil
+	case err != nil:
+		return nil, err
+	}
+
+	err = a.statisticsService.AccountPostLike(ctx, model.PostLike{UserID: *userID, PostID: request.PostId})
+	if err != nil {
+		return nil, err
+	}
+	return codegen.PostV1PostsPostIdMarkLiked200Response{}, nil
+}
+
+// (POST /v1/posts/{post_id}/mark_viewed)
+func (a *adapter) PostV1PostsPostIdMarkViewed(
+	ctx context.Context,
+	request codegen.PostV1PostsPostIdMarkViewedRequestObject,
+) (codegen.PostV1PostsPostIdMarkViewedResponseObject, error) {
+	// TODO: use refresh token too
+	// TODO: make it helper function
+	_, userID, err := a.authService.ValidateAndRefresh(
+		ctx,
+		&model.TokenPair{AccessToken: request.Params.XSESSION, RefreshToken: ""},
+	)
+	switch {
+	case errors.Is(err, service.ErrUnsupportedClaims) || errors.Is(err, service.ErrUnauthorized):
+		return codegen.PostV1PostsPostIdMarkViewed401Response{}, nil
+	case err != nil:
+		return nil, err
+	}
+
+	err = a.statisticsService.AccountPostView(ctx, model.PostView{UserID: *userID, PostID: request.PostId})
+	if err != nil {
+		return nil, err
+	}
+	return codegen.PostV1PostsPostIdMarkViewed200Response{}, nil
+}
+
 func (a *adapter) Serve() error {
 	logger, err := logger.GetLogger(true)
 	if err != nil {
@@ -334,11 +385,13 @@ func NewAdapter(
 	config *Config,
 	authService service.Auth,
 	userService service.User,
+	statisticsService service.Statistics,
 	postsClient clients.PostsClient) Adapter {
 	return &adapter{
-		cfg:         config,
-		authService: authService,
-		userService: userService,
-		postsClient: postsClient,
+		cfg:               config,
+		authService:       authService,
+		userService:       userService,
+		statisticsService: statisticsService,
+		postsClient:       postsClient,
 	}
 }
