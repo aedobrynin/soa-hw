@@ -12,7 +12,6 @@ import (
 )
 
 const (
-	AppName                     = "auth"
 	DefaultServeAddress         = "localhost:3000"
 	DefaultShutdownTimeout      = 20 * time.Second
 	DefaultBasePath             = "/"
@@ -55,6 +54,7 @@ func NewConfig(fileName string) (*Config, error) {
 
 	cnf := Config{
 		App: AppConfig{
+			Debug:           false,
 			ShutdownTimeout: DefaultShutdownTimeout,
 		},
 		Database: DatabaseConfig{
@@ -64,6 +64,7 @@ func NewConfig(fileName string) (*Config, error) {
 		HTTP: httpadapter.Config{
 			ServeAddress:       DefaultServeAddress,
 			BasePath:           DefaultBasePath,
+			UseTLS:             false,
 			AccessTokenCookie:  DefaultAccessTokenCookie,
 			RefreshTokenCookie: DefaultRefreshTokenCookie,
 		},

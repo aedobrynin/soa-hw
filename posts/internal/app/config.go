@@ -8,9 +8,9 @@ import (
 )
 
 const (
-	DefaultDebug         = true
+	DefaultDebug         = false
 	DefaultDSN           = "dsn://"
-	DefaultMigrationsDir = "file://migrations/auth"
+	DefaultMigrationsDir = "file://postgresql/posts/migrations/"
 	DefaultGRPCPort      = 8080
 )
 

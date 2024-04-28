@@ -1,0 +1,11 @@
+app:
+  debug: true
+database:
+  addr: 'statistics_clickhouse:9000'
+  database: 'statistics'
+  user: 'statistics'
+  password: 'statistics'
+  migrations_dir: 'file://clickhouse/statistics/migrations/'
+http:
+  serve_address: :3000
+  base_path: ''

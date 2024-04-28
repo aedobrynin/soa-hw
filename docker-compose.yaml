@@ -1,5 +1,5 @@
-version: "3.1"
 services:
+# core service
   core_service_build:
     image: core_service_build:develop
     build:
@@ -15,9 +15,6 @@ services:
         condition: service_completed_successfully
       core_postgres:
         condition: service_healthy
-      # TODO: myb it's bad?
-      posts_service:
-        condition: service_started
     ports:
       - "3000:3000"
 
@@ -36,6 +33,7 @@ services:
     volumes:
       - ./postgres-data/core_postgres:/var/lib/postgresql/data
 
+# posts service
   posts_service_build:
     image: posts_service_build:develop
     build:
@@ -51,8 +49,6 @@ services:
         condition: service_completed_successfully
       posts_postgres:
         condition: service_healthy
-    ports:
-      - "8080:8080"
 
   posts_postgres:
     image: postgres
@@ -68,3 +64,75 @@ services:
       retries: 5
     volumes:
       - ./postgres-data/posts_postgres:/var/lib/postgresql/data
+
+# statistics service
+  statistics_service_build:
+    image: statistics_service_build:develop
+    build:
+      context: "./statistics"
+      dockerfile: "./build/build.Dockerfile"
+
+  statistics_service:
+    build:
+      context: "./statistics"
+      dockerfile: "./build/statistics.Dockerfile"
+    depends_on:
+      statistics_service_build:
+        condition: service_completed_successfully
+      statistics_clickhouse:
+        condition: service_healthy
+
+  statistics_clickhouse:
+    image: clickhouse/clickhouse-server
+    restart: always
+    environment:
+      CLICKHOUSE_DB: statistics
+      CLICKHOUSE_USER: statistics
+      CLICKHOUSE_PASSWORD: statistics
+    depends_on:
+      # TODO: this is probably bad
+      kafka:
+        condition: service_healthy
+      kafka-init-topics:
+        condition: service_completed_successfully
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:8123/ping || exit 1
+      start_period: 1s
+      interval: 2s
+      timeout: 10s
+      retries: 5
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+      - "9440:9440"
+
+# kafka
+  kafka:
+    image: bitnami/kafka:3.7.0 
+    env_file:
+      - "./deployments/kafka/.env.dev"
+    healthcheck:
+      test: kafka-cluster.sh cluster-id --bootstrap-server localhost:9092 || exit 1
+      start_period: 1s
+      interval: 2s
+      timeout: 10s
+      retries: 5
+
+  kafka-init-topics:
+    image: bitnami/kafka:3.7.0
+    command: ["/bin/bash", "-c", "/init_topics.sh"]
+    depends_on:
+      kafka:
+        condition: service_started
+    env_file:
+      - "./deployments/kafka/.env.dev"
+    volumes:
+      - type: bind
+        source: "./deployments/kafka/init_topics.sh"
+        target: "/init_topics.sh"
+    init: true
+
+  kafka-cli:
+    image: conitasgmbh/kafka-cli
+    command: ["/bin/sh", "-c", "while true; do sleep 10; done"]
+  
