@@ -9,12 +9,12 @@ import (
 )
 
 func getConfigPath() string {
-	var configPath string
+	var flagConfigPath string
 
-	flag.StringVar(&configPath, "c", "./.config.yaml", "path to config file")
+	flag.StringVar(&flagConfigPath, "c", "./.config.yaml", "path to config file")
 	flag.Parse()
 
-	return configPath
+	return flagConfigPath
 }
 
 func main() {

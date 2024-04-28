@@ -4,7 +4,7 @@ import (
 	"flag"
 	"log"
 
-	"github.com/aedobrynin/soa-hw/core/internal/app"
+	"github.com/aedobrynin/soa-hw/statistics/internal/app"
 )
 
 func getConfigPath() string {

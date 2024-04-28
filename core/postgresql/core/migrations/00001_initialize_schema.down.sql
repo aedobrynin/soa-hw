@@ -1,2 +1,0 @@
-DROP TABLE IF EXISTS core.users;
-DROP SCHEMA core;
