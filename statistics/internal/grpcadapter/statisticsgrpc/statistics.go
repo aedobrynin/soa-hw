@@ -36,6 +36,7 @@ func (s *serverAPI) GetPostStatistics(
 		return nil, status.Errorf(codes.Internal, "internal error")
 	}
 	return &gen.PostStatistics{
+		PostId:   request.PostId,
 		LikesCnt: stats.LikesCnt,
 		ViewsCnt: stats.ViewsCnt,
 	}, nil
