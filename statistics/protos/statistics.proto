@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package statistics;
+
+option go_package = "github.com/aedobrynin/soa-hw/statistics//grpcadapter/gen";
+
+service Statistics {
+  rpc GetPostStatistics(GetPostStatisticsRequest) returns (PostStatistics) {}
+}
+
+message GetPostStatisticsRequest { string id = 1; }
+
+message PostStatistics {
+  string id = 1;
+  uint64 likes_cnt = 2;
+  uint64 views_cnt = 3;
+}
