@@ -7,5 +7,5 @@ import (
 )
 
 type Statistics interface {
-	GetPostStatistics(ctx context.Context, postId model.PostID) (stats *model.PostStatistics, err error)
+	GetPostStatistics(ctx context.Context, postID model.PostID) (stats *model.PostStatistics, err error)
 }

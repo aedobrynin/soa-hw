@@ -2,7 +2,7 @@ package statisticssvc
 
 import (
 	"context"
-	"errors"
+	"fmt"
 
 	"go.uber.org/zap"
 
@@ -20,13 +20,19 @@ var _ service.Statistics = &statisticsSvc{}
 
 func (s *statisticsSvc) GetPostStatistics(
 	ctx context.Context,
-	postId model.PostID,
-) (stats *model.PostStatistics, err error) {
+	postID model.PostID,
+) (*model.PostStatistics, error) {
 	defer func() {
 		_ = s.logger.Sync()
 	}()
-	// TODO
-	return nil, errors.New("not implemented")
+	s.logger.Sugar().Debugf("Trying to get post statistics for id=%s", postID)
+	stats, err := s.repo.GetPostStatistics(ctx, postID)
+	if err != nil {
+		wrappedErr := fmt.Errorf("error on getting post stats from repo: %v", err)
+		s.logger.Sugar().Error(wrappedErr)
+		return nil, wrappedErr
+	}
+	return stats, nil
 }
 
 func New(logger *zap.Logger, repo repo.Statistics) service.Statistics {

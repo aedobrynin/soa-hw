@@ -2,12 +2,14 @@ package statisticsgrpc
 
 import (
 	"context"
-	"errors"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/aedobrynin/soa-hw/statistics/internal/grpcadapter/gen"
 	"github.com/aedobrynin/soa-hw/statistics/internal/service"
+	"github.com/google/uuid"
 )
 
 type serverAPI struct {
@@ -23,6 +25,18 @@ func (s *serverAPI) GetPostStatistics(
 	ctx context.Context,
 	request *gen.GetPostStatisticsRequest,
 ) (*gen.PostStatistics, error) {
-	// TODO
-	return nil, errors.New("not implemented")
+	postID, err := uuid.Parse(request.PostId)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, "post_id should be valid uuid")
+	}
+
+	stats, err := s.statistics.GetPostStatistics(ctx, postID)
+	if err != nil {
+
+		return nil, status.Errorf(codes.Internal, "internal error")
+	}
+	return &gen.PostStatistics{
+		LikesCnt: stats.LikesCnt,
+		ViewsCnt: stats.ViewsCnt,
+	}, nil
 }

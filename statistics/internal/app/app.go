@@ -65,7 +65,7 @@ func New(logger *zap.Logger, config *Config) (App, error) {
 
 	conn, err := connectToDb(context.Background(), &config.Database)
 	if err != nil {
-		return nil, fmt.Errorf("error on connection to Clickhouse: %v", err)
+		return nil, fmt.Errorf("error on connection to ClickHouse: %v", err)
 	}
 
 	statisticsRepo := statisticsrepo.New(logger, conn)

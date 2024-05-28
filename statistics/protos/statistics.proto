@@ -8,10 +8,9 @@ service Statistics {
   rpc GetPostStatistics(GetPostStatisticsRequest) returns (PostStatistics) {}
 }
 
-message GetPostStatisticsRequest { string id = 1; }
+message GetPostStatisticsRequest { string post_id = 1; }
 
 message PostStatistics {
-  string id = 1;
   uint64 likes_cnt = 2;
   uint64 views_cnt = 3;
 }
