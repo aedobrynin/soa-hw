@@ -5,4 +5,5 @@ grpc-generate:
 	--go_opt=paths=source_relative \
 	--go-grpc_out=./internal/grpcadapter/gen/ \
 	--go-grpc_opt=paths=source_relative \
+	--experimental_allow_proto3_optional \
 	protos/statistics.proto

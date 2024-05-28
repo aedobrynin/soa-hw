@@ -23,6 +23,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type StatisticsClient interface {
 	GetPostStatistics(ctx context.Context, in *GetPostStatisticsRequest, opts ...grpc.CallOption) (*PostStatistics, error)
+	GetTopPosts(ctx context.Context, in *GetTopPostsRequest, opts ...grpc.CallOption) (*GetTopPostsResponse, error)
 }
 
 type statisticsClient struct {
@@ -42,11 +43,21 @@ func (c *statisticsClient) GetPostStatistics(ctx context.Context, in *GetPostSta
 	return out, nil
 }
 
+func (c *statisticsClient) GetTopPosts(ctx context.Context, in *GetTopPostsRequest, opts ...grpc.CallOption) (*GetTopPostsResponse, error) {
+	out := new(GetTopPostsResponse)
+	err := c.cc.Invoke(ctx, "/statistics.Statistics/GetTopPosts", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // StatisticsServer is the server API for Statistics service.
 // All implementations must embed UnimplementedStatisticsServer
 // for forward compatibility
 type StatisticsServer interface {
 	GetPostStatistics(context.Context, *GetPostStatisticsRequest) (*PostStatistics, error)
+	GetTopPosts(context.Context, *GetTopPostsRequest) (*GetTopPostsResponse, error)
 	mustEmbedUnimplementedStatisticsServer()
 }
 
@@ -56,6 +67,9 @@ type UnimplementedStatisticsServer struct {
 
 func (UnimplementedStatisticsServer) GetPostStatistics(context.Context, *GetPostStatisticsRequest) (*PostStatistics, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetPostStatistics not implemented")
+}
+func (UnimplementedStatisticsServer) GetTopPosts(context.Context, *GetTopPostsRequest) (*GetTopPostsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTopPosts not implemented")
 }
 func (UnimplementedStatisticsServer) mustEmbedUnimplementedStatisticsServer() {}
 
@@ -88,6 +102,24 @@ func _Statistics_GetPostStatistics_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Statistics_GetTopPosts_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetTopPostsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StatisticsServer).GetTopPosts(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/statistics.Statistics/GetTopPosts",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StatisticsServer).GetTopPosts(ctx, req.(*GetTopPostsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Statistics_ServiceDesc is the grpc.ServiceDesc for Statistics service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -98,6 +130,10 @@ var Statistics_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetPostStatistics",
 			Handler:    _Statistics_GetPostStatistics_Handler,
+		},
+		{
+			MethodName: "GetTopPosts",
+			Handler:    _Statistics_GetTopPosts_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

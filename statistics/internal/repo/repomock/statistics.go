@@ -21,6 +21,14 @@ func (m *StatisticsMock) GetPostStatistics(
 	return args.Get(0).(*model.PostStatistics), args.Error(1)
 }
 
+func (m *StatisticsMock) GetTopPosts(
+	ctx context.Context,
+	request model.GetTopPostsRequest,
+) ([]model.CutPostStatistics, error) {
+	args := m.Called(ctx, request)
+	return args.Get(0).([]model.CutPostStatistics), args.Error(1)
+}
+
 func NewPost() repo.Statistics {
 	return &StatisticsMock{}
 }
