@@ -25,7 +25,8 @@ type adapter struct {
 	userService       service.User
 	statisticsService service.Statistics
 
-	postsClient clients.PostsClient
+	postsClient      clients.PostsClient
+	statisticsClient clients.StatisticsClient
 
 	server *http.Server
 
@@ -235,6 +236,9 @@ func (a *adapter) GetV1PostsPostId(
 	if errors.Is(err, clients.ErrPostNotFound) {
 		return codegen.GetV1PostsPostId404Response{}, nil
 	}
+	if err != nil {
+		return nil, err
+	}
 	return codegen.GetV1PostsPostId200JSONResponse(
 		codegen.Post{Id: post.ID, AuthorId: post.AuthorID.String(), Content: post.Content},
 	), nil
@@ -337,6 +341,70 @@ func (a *adapter) PostV1PostsPostIdMarkViewed(
 	return codegen.PostV1PostsPostIdMarkViewed200Response{}, nil
 }
 
+// (GET /v1/posts/{post_id}/stats)
+func (a *adapter) GetV1PostsPostIdStats(
+	ctx context.Context,
+	request codegen.GetV1PostsPostIdStatsRequestObject,
+) (codegen.GetV1PostsPostIdStatsResponseObject, error) {
+	// TODO: use refresh token too
+	// TODO: make it helper function
+	_, _, err := a.authService.ValidateAndRefresh(
+		ctx,
+		&model.TokenPair{AccessToken: request.Params.XSESSION, RefreshToken: ""},
+	)
+	switch {
+	case errors.Is(err, service.ErrUnsupportedClaims) || errors.Is(err, service.ErrUnauthorized):
+		return codegen.GetV1PostsPostIdStats401Response{}, nil
+	case err != nil:
+		return nil, err
+	}
+
+	type postsRespType struct {
+		Post *model.Post
+		err  error
+	} // TODO: better
+	postsRespChan := make(chan postsRespType, 1)
+	go func() {
+		post, err := a.postsClient.GetPost(ctx, request.PostId)
+		postsRespChan <- postsRespType{Post: post, err: err}
+		close(postsRespChan) // TODO: defer?
+	}()
+
+	type statsRespType struct {
+		Stats *model.PostStatistics
+		err   error
+	} // TODO: better
+	statsRespChan := make(chan statsRespType, 1)
+	go func() {
+		stats, err := a.statisticsClient.GetPostStatistics(ctx, request.PostId)
+		statsRespChan <- statsRespType{Stats: stats, err: err}
+		close(statsRespChan) // TODO: defer?
+	}()
+
+	postsResp := <-postsRespChan
+	if errors.Is(postsResp.err, clients.ErrPostNotFound) {
+		return codegen.GetV1PostsPostIdStats404Response{}, nil
+	}
+	if postsResp.err != nil {
+		return nil, err
+	}
+
+	statsResp := <-statsRespChan
+	if statsResp.err != nil {
+		return nil, err
+	}
+	if statsResp.Stats.LikesCount == nil {
+		a.logger.Sugar().Warnf("statistics service returned nil in LikesCount field for post_id=%s", request.PostId)
+	}
+	if statsResp.Stats.ViewsCount == nil {
+		a.logger.Sugar().Warnf("statistics service returned nil in ViewsCount field for post_id=%s", request.PostId)
+	}
+
+	return codegen.GetV1PostsPostIdStats200JSONResponse{LikesCount: statsResp.Stats.LikesCount,
+		PostId:     request.PostId,
+		ViewsCount: statsResp.Stats.ViewsCount}, nil
+}
+
 func (a *adapter) Serve() error {
 	logger, err := logger.GetLogger(true)
 	if err != nil {
@@ -386,12 +454,14 @@ func NewAdapter(
 	authService service.Auth,
 	userService service.User,
 	statisticsService service.Statistics,
-	postsClient clients.PostsClient) Adapter {
+	postsClient clients.PostsClient,
+	statisticsClient clients.StatisticsClient) Adapter {
 	return &adapter{
 		cfg:               config,
 		authService:       authService,
 		userService:       userService,
 		statisticsService: statisticsService,
 		postsClient:       postsClient,
+		statisticsClient:  statisticsClient,
 	}
 }

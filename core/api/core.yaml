@@ -297,8 +297,8 @@ paths:
             description: mark post as viewed
             parameters:
                 # TODO: use refresh token too
-                - in: cookie
-                  name: X_SESSION
+                - name: X_SESSION
+                  in: cookie
                   schema:
                       type: string
                   required: true
@@ -313,6 +313,35 @@ paths:
                     description: OK
                 '401':
                     description: Unathorized
+
+    /v1/posts/{post_id}/stats:
+        get:
+            description: get post stats
+            parameters:
+                # TODO: use refresh token too
+                - in: cookie
+                  name: X_SESSION
+                  schema:
+                      type: string
+                  required: true
+                - name: post_id
+                  in: path
+                  description: Post ID
+                  required: true
+                  schema:
+                      type: string
+            responses:
+                '200':
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/PostStatistics'
+
+                '401':
+                    description: Unathorized
+                '404':
+                    description: Post not found
 
     # TODO: better pagination
     /v1/posts/list:
@@ -372,11 +401,14 @@ components:
             required:
                 - error
 
+        PostID:
+            type: string
+
         Post:
             type: object
             properties:
                 id:
-                    type: string
+                    $ref: '#/components/schemas/PostID'
                 content:
                     type: string
                 author_id:
@@ -385,3 +417,17 @@ components:
                 - id
                 - content
                 - author_id
+
+        PostStatistics:
+            type: object
+            properties:
+                post_id:
+                    $ref: '#/components/schemas/PostID'
+                views_count:
+                    type: integer
+                    format: uint64
+                likes_count:
+                    type: integer
+                    format: uint64
+            required:
+                - post_id

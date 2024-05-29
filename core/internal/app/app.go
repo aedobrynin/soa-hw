@@ -15,6 +15,7 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 
 	"github.com/aedobrynin/soa-hw/core/internal/clients/postsclient"
+	"github.com/aedobrynin/soa-hw/core/internal/clients/statisticsclient"
 	"github.com/aedobrynin/soa-hw/core/internal/config"
 	"github.com/aedobrynin/soa-hw/core/internal/httpadapter"
 	"github.com/aedobrynin/soa-hw/core/internal/repo"
@@ -81,6 +82,10 @@ func New(config *config.Config) (App, error) {
 
 	statisticsRepo := statisticsrepo.New(&config.Kafka)
 	statisticsService := statisticssvc.New(statisticsRepo)
+	statisticsClient, err := statisticsclient.New(context.Background(), &config.Statistics)
+	if err != nil {
+		return nil, fmt.Errorf("error on statistics client initialization: %v", err)
+	}
 
 	a := &app{
 		config:            config,
@@ -95,6 +100,7 @@ func New(config *config.Config) (App, error) {
 			userService,
 			statisticsService,
 			postsClient,
+			statisticsClient,
 		),
 	}
 

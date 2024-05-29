@@ -7,6 +7,7 @@ import (
 	"gopkg.in/yaml.v3"
 
 	"github.com/aedobrynin/soa-hw/core/internal/clients/postsclient"
+	"github.com/aedobrynin/soa-hw/core/internal/clients/statisticsclient"
 	"github.com/aedobrynin/soa-hw/core/internal/httpadapter"
 	"github.com/aedobrynin/soa-hw/core/internal/service"
 )
@@ -34,6 +35,11 @@ const (
 	DefaultPostsAddr         = "posts_service:8080"
 	DefaultPostsTimeout      = 5 * time.Second
 	DefaultPostsRetriesCount = 3
+
+	// StatisticsConfig defaults (TODO: myb move to statisticsclient module?)
+	DefaultStatisticsAddr         = "statistics_service:8080"
+	DefaultStatisticsTimeout      = 5 * time.Second
+	DefaultStatisticsRetriesCount = 3
 
 	// KafkaConfig defaults
 	DefaultKafkaBrokerAddr          = "kafka:9092"
@@ -63,8 +69,9 @@ type Config struct {
 	HTTP     httpadapter.Config `yaml:"http"`
 	Kafka    KafkaConfig        `yaml:"kafka"`
 
-	Auth  service.AuthConfig            `yaml:"auth"`
-	Posts postsclient.PostsClientConfig `yaml:"posts_client"`
+	Auth       service.AuthConfig                      `yaml:"auth"`
+	Posts      postsclient.PostsClientConfig           `yaml:"posts_client"`
+	Statistics statisticsclient.StatisticsClientConfig `yaml:"statistics_client"`
 }
 
 func NewConfig(fileName string) (*Config, error) {
@@ -103,6 +110,11 @@ func NewConfig(fileName string) (*Config, error) {
 			Addr:         DefaultPostsAddr,
 			Timeout:      DefaultPostsTimeout,
 			RetriesCount: DefaultPostsRetriesCount,
+		},
+		Statistics: statisticsclient.StatisticsClientConfig{
+			Addr:         DefaultStatisticsAddr,
+			Timeout:      DefaultStatisticsTimeout,
+			RetriesCount: DefaultStatisticsRetriesCount,
 		},
 	}
 

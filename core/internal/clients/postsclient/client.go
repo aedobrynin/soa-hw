@@ -142,7 +142,7 @@ func (c *PostsClient) ListPosts(
 func New(
 	ctx context.Context,
 	config *PostsClientConfig,
-) (*PostsClient, error) {
+) (clients.PostsClient, error) {
 	retryOpts := []grpcretry.CallOption{
 		grpcretry.WithCodes(codes.NotFound, codes.Aborted, codes.DeadlineExceeded),
 		grpcretry.WithMax(uint(config.RetriesCount)),

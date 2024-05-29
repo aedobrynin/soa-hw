@@ -1,0 +1,3 @@
+package statisticsclient
+
+// TODO: tests

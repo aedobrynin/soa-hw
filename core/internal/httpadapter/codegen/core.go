@@ -23,7 +23,17 @@ type ErrorMessage struct {
 type Post struct {
 	AuthorId string `json:"author_id"`
 	Content  string `json:"content"`
-	Id       string `json:"id"`
+	Id       PostID `json:"id"`
+}
+
+// PostID defines model for PostID.
+type PostID = string
+
+// PostStatistics defines model for PostStatistics.
+type PostStatistics struct {
+	LikesCount *uint64 `json:"likes_count,omitempty"`
+	PostId     PostID  `json:"post_id"`
+	ViewsCount *uint64 `json:"views_count,omitempty"`
 }
 
 // PostV1AuthJSONBody defines parameters for PostV1Auth.
@@ -76,6 +86,11 @@ type PostV1PostsPostIdMarkLikedParams struct {
 
 // PostV1PostsPostIdMarkViewedParams defines parameters for PostV1PostsPostIdMarkViewed.
 type PostV1PostsPostIdMarkViewedParams struct {
+	XSESSION string `form:"X_SESSION" json:"X_SESSION"`
+}
+
+// GetV1PostsPostIdStatsParams defines parameters for GetV1PostsPostIdStats.
+type GetV1PostsPostIdStatsParams struct {
 	XSESSION string `form:"X_SESSION" json:"X_SESSION"`
 }
 
@@ -144,6 +159,9 @@ type ServerInterface interface {
 	// (POST /v1/posts/{post_id}/mark_viewed)
 	PostV1PostsPostIdMarkViewed(w http.ResponseWriter, r *http.Request, postId string, params PostV1PostsPostIdMarkViewedParams)
 
+	// (GET /v1/posts/{post_id}/stats)
+	GetV1PostsPostIdStats(w http.ResponseWriter, r *http.Request, postId string, params GetV1PostsPostIdStatsParams)
+
 	// (POST /v1/users)
 	PostV1Users(w http.ResponseWriter, r *http.Request)
 
@@ -193,6 +211,11 @@ func (_ Unimplemented) PostV1PostsPostIdMarkLiked(w http.ResponseWriter, r *http
 
 // (POST /v1/posts/{post_id}/mark_viewed)
 func (_ Unimplemented) PostV1PostsPostIdMarkViewed(w http.ResponseWriter, r *http.Request, postId string, params PostV1PostsPostIdMarkViewedParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// (GET /v1/posts/{post_id}/stats)
+func (_ Unimplemented) GetV1PostsPostIdStats(w http.ResponseWriter, r *http.Request, postId string, params GetV1PostsPostIdStatsParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -550,6 +573,51 @@ func (siw *ServerInterfaceWrapper) PostV1PostsPostIdMarkViewed(w http.ResponseWr
 	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
+// GetV1PostsPostIdStats operation middleware
+func (siw *ServerInterfaceWrapper) GetV1PostsPostIdStats(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var err error
+
+	// ------------- Path parameter "post_id" -------------
+	var postId string
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "post_id", runtime.ParamLocationPath, chi.URLParam(r, "post_id"), &postId)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "post_id", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetV1PostsPostIdStatsParams
+
+	var cookie *http.Cookie
+
+	if cookie, err = r.Cookie("X_SESSION"); err == nil {
+		var value string
+		err = runtime.BindStyledParameter("simple", true, "X_SESSION", cookie.Value, &value)
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X_SESSION", Err: err})
+			return
+		}
+		params.XSESSION = value
+
+	} else {
+		siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "X_SESSION"})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetV1PostsPostIdStats(w, r, postId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
 // PostV1Users operation middleware
 func (siw *ServerInterfaceWrapper) PostV1Users(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -746,6 +814,9 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	})
 	r.Group(func(r chi.Router) {
 		r.Post(options.BaseURL+"/v1/posts/{post_id}/mark_viewed", wrapper.PostV1PostsPostIdMarkViewed)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/v1/posts/{post_id}/stats", wrapper.GetV1PostsPostIdStats)
 	})
 	r.Group(func(r chi.Router) {
 		r.Post(options.BaseURL+"/v1/users", wrapper.PostV1Users)
@@ -1044,6 +1115,40 @@ func (response PostV1PostsPostIdMarkViewed401Response) VisitPostV1PostsPostIdMar
 	return nil
 }
 
+type GetV1PostsPostIdStatsRequestObject struct {
+	PostId string `json:"post_id"`
+	Params GetV1PostsPostIdStatsParams
+}
+
+type GetV1PostsPostIdStatsResponseObject interface {
+	VisitGetV1PostsPostIdStatsResponse(w http.ResponseWriter) error
+}
+
+type GetV1PostsPostIdStats200JSONResponse PostStatistics
+
+func (response GetV1PostsPostIdStats200JSONResponse) VisitGetV1PostsPostIdStatsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetV1PostsPostIdStats401Response struct {
+}
+
+func (response GetV1PostsPostIdStats401Response) VisitGetV1PostsPostIdStatsResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type GetV1PostsPostIdStats404Response struct {
+}
+
+func (response GetV1PostsPostIdStats404Response) VisitGetV1PostsPostIdStatsResponse(w http.ResponseWriter) error {
+	w.WriteHeader(404)
+	return nil
+}
+
 type PostV1UsersRequestObject struct {
 	Body *PostV1UsersJSONRequestBody
 }
@@ -1130,6 +1235,9 @@ type StrictServerInterface interface {
 
 	// (POST /v1/posts/{post_id}/mark_viewed)
 	PostV1PostsPostIdMarkViewed(ctx context.Context, request PostV1PostsPostIdMarkViewedRequestObject) (PostV1PostsPostIdMarkViewedResponseObject, error)
+
+	// (GET /v1/posts/{post_id}/stats)
+	GetV1PostsPostIdStats(ctx context.Context, request GetV1PostsPostIdStatsRequestObject) (GetV1PostsPostIdStatsResponseObject, error)
 
 	// (POST /v1/users)
 	PostV1Users(ctx context.Context, request PostV1UsersRequestObject) (PostV1UsersResponseObject, error)
@@ -1392,6 +1500,33 @@ func (sh *strictHandler) PostV1PostsPostIdMarkViewed(w http.ResponseWriter, r *h
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
 	} else if validResponse, ok := response.(PostV1PostsPostIdMarkViewedResponseObject); ok {
 		if err := validResponse.VisitPostV1PostsPostIdMarkViewedResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetV1PostsPostIdStats operation middleware
+func (sh *strictHandler) GetV1PostsPostIdStats(w http.ResponseWriter, r *http.Request, postId string, params GetV1PostsPostIdStatsParams) {
+	var request GetV1PostsPostIdStatsRequestObject
+
+	request.PostId = postId
+	request.Params = params
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.GetV1PostsPostIdStats(ctx, request.(GetV1PostsPostIdStatsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetV1PostsPostIdStats")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(GetV1PostsPostIdStatsResponseObject); ok {
+		if err := validResponse.VisitGetV1PostsPostIdStatsResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {
