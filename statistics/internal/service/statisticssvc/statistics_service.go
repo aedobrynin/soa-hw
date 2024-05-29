@@ -57,6 +57,25 @@ func (s *statisticsSvc) GetTopPosts(
 	return top, nil
 }
 
+func (s *statisticsSvc) GetTopUsersByLikesCount(ctx context.Context, limit uint64) ([]model.UserStatistics, error) {
+	defer func() {
+		_ = s.logger.Sync()
+	}()
+	s.logger.Sugar().Debugf("Trying to get top users. limit=%d", limit)
+	if limit > 30 {
+		s.logger.Sugar().Infof("Limit=%d is too big", limit)
+		return nil, service.ErrLimitTooBig
+	}
+
+	top, err := s.repo.GetTopUsersByLikesCount(ctx, limit)
+	if err != nil {
+		wrappedErr := fmt.Errorf("error on getting top users from repo: %v", err)
+		s.logger.Sugar().Error(wrappedErr)
+		return nil, wrappedErr
+	}
+	return top, nil
+}
+
 func New(logger *zap.Logger, repo repo.Statistics) service.Statistics {
 	return &statisticsSvc{logger: logger, repo: repo}
 }

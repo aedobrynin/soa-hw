@@ -88,6 +88,53 @@ func (r *statisticsRepo) GetTopPosts(
 			model.CutPostStatistics{PostID: postID, LikesCnt: cutPostStats.LikesCnt, ViewsCnt: cutPostStats.ViewsCnt},
 		)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error on get top posts: %v", err)
+	}
+	return res, nil
+}
+
+type UserStatistics struct {
+	UserID   string `ch:"post_author_id"`
+	LikesCnt uint64 `ch:"likes_cnt"`
+}
+
+func (r *statisticsRepo) GetTopUsersByLikesCount(ctx context.Context, limit uint64) ([]model.UserStatistics, error) {
+	var rows clickhouse_driver.Rows
+	var err error
+
+	rows, err = r.conn.Query(
+		ctx,
+		fmt.Sprintf(
+			"SELECT post_author_id, count(DISTINCT (user_id, post_id)) as likes_cnt FROM posts_likes_indexed_by_post_author GROUP BY post_author_id ORDER BY likes_cnt LIMIT %d",
+			limit,
+		),
+	)
+
+	if err != nil {
+		return nil, fmt.Errorf("error on get top users: %v", err)
+	}
+	defer rows.Close()
+
+	res := make([]model.UserStatistics, 0)
+	for rows.Next() {
+		var userStats UserStatistics
+		if err := rows.ScanStruct(&userStats); err != nil {
+			return nil, fmt.Errorf("error on scanning user stats: %v", err)
+		}
+
+		userID, err := uuid.Parse(userStats.UserID)
+		if err != nil {
+			return nil, fmt.Errorf("error on converting user_id from string to uuid: %v", err)
+		}
+		res = append(
+			res,
+			model.UserStatistics{UserID: userID, LikesCount: userStats.LikesCnt},
+		)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error on get top users: %v", err)
+	}
 	return res, nil
 }
 

@@ -23,6 +23,6 @@ CREATE TABLE IF NOT EXISTS posts_likes_indexed_by_post_author
 ENGINE = MergeTree
 ORDER BY post_author_id;
 
-CREATE MATERIALIZED VIEW IF NOT EXISTS posts_likes_queue_mv TO posts_likes_indexed_by_post_author AS
+CREATE MATERIALIZED VIEW IF NOT EXISTS posts_likes_queue_mv_indexed_by_post_author TO posts_likes_indexed_by_post_author AS
 SELECT user_id, post_id, post_author_id
 FROM posts_likes_queue;

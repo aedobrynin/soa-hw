@@ -14,4 +14,6 @@ type Statistics interface {
 	// If OrderByLikesCnt: LikesCnt != nil, ViewsCnt == nil
 	// If OrderByViewsCnt: LikesCnt == nil, ViewsCnt != nil
 	GetTopPosts(ctx context.Context, request model.GetTopPostsRequest) ([]model.CutPostStatistics, error)
+
+	GetTopUsersByLikesCount(ctx context.Context, limit uint64) ([]model.UserStatistics, error)
 }

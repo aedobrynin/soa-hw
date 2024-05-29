@@ -82,3 +82,31 @@ func (s *serverAPI) GetTopPosts(
 	}
 	return &gen.GetTopPostsResponse{Top: res}, nil
 }
+
+func (s *serverAPI) GetTopUsersByLikesCount(
+	ctx context.Context,
+	request *gen.GetTopUsersByLikesCountRequest,
+) (*gen.GetTopUsersByLikesCountResponse, error) {
+	top, err := s.statistics.GetTopUsersByLikesCount(
+		ctx,
+		request.Limit,
+	)
+	if errors.Is(err, service.ErrLimitTooBig) {
+		return nil, status.Error(codes.InvalidArgument, "limit is too big")
+	}
+	if err != nil {
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	res := make([]*gen.UserStatistics, 0, len(top))
+	for _, userStats := range top {
+		res = append(
+			res,
+			&gen.UserStatistics{
+				UserId:     userStats.UserID.String(),
+				LikesCount: userStats.LikesCount,
+			},
+		)
+	}
+	return &gen.GetTopUsersByLikesCountResponse{Top: res}, nil
+}
