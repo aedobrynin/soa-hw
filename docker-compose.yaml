@@ -81,8 +81,6 @@ services:
         condition: service_completed_successfully
       statistics_clickhouse:
         condition: service_healthy
-    ports:
-      - "8080:8080"
 
   statistics_clickhouse:
     image: clickhouse/clickhouse-server

@@ -50,6 +50,12 @@ type PostStatistics struct {
 	ViewsCount *uint64 `json:"views_count,omitempty"`
 }
 
+// UserInTop defines model for UserInTop.
+type UserInTop struct {
+	LikesCount uint64 `json:"likes_count"`
+	UserLogin  string `json:"user_login"`
+}
+
 // PostV1AuthJSONBody defines parameters for PostV1Auth.
 type PostV1AuthJSONBody struct {
 	Login    string `json:"login"`
@@ -127,6 +133,11 @@ type PostV1UsersJSONBody struct {
 	Surname  *string `json:"surname,omitempty"`
 }
 
+// GetV1UsersTopParams defines parameters for GetV1UsersTop.
+type GetV1UsersTopParams struct {
+	XSESSION string `form:"X_SESSION" json:"X_SESSION"`
+}
+
 // PatchV1UsersUserIdJSONBody defines parameters for PatchV1UsersUserId.
 type PatchV1UsersUserIdJSONBody struct {
 	Email   *string `json:"email,omitempty"`
@@ -191,6 +202,9 @@ type ServerInterface interface {
 	// (POST /v1/users)
 	PostV1Users(w http.ResponseWriter, r *http.Request)
 
+	// (GET /v1/users/top)
+	GetV1UsersTop(w http.ResponseWriter, r *http.Request, params GetV1UsersTopParams)
+
 	// (PATCH /v1/users/{user_id})
 	PatchV1UsersUserId(w http.ResponseWriter, r *http.Request, userId string, params PatchV1UsersUserIdParams)
 }
@@ -252,6 +266,11 @@ func (_ Unimplemented) GetV1PostsPostIdStats(w http.ResponseWriter, r *http.Requ
 
 // (POST /v1/users)
 func (_ Unimplemented) PostV1Users(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// (GET /v1/users/top)
+func (_ Unimplemented) GetV1UsersTop(w http.ResponseWriter, r *http.Request, params GetV1UsersTopParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -715,6 +734,42 @@ func (siw *ServerInterfaceWrapper) PostV1Users(w http.ResponseWriter, r *http.Re
 	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
+// GetV1UsersTop operation middleware
+func (siw *ServerInterfaceWrapper) GetV1UsersTop(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetV1UsersTopParams
+
+	var cookie *http.Cookie
+
+	if cookie, err = r.Cookie("X_SESSION"); err == nil {
+		var value string
+		err = runtime.BindStyledParameter("simple", true, "X_SESSION", cookie.Value, &value)
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X_SESSION", Err: err})
+			return
+		}
+		params.XSESSION = value
+
+	} else {
+		siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "X_SESSION"})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetV1UsersTop(w, r, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
 // PatchV1UsersUserId operation middleware
 func (siw *ServerInterfaceWrapper) PatchV1UsersUserId(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -905,6 +960,9 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	})
 	r.Group(func(r chi.Router) {
 		r.Post(options.BaseURL+"/v1/users", wrapper.PostV1Users)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/v1/users/top", wrapper.GetV1UsersTop)
 	})
 	r.Group(func(r chi.Router) {
 		r.Patch(options.BaseURL+"/v1/users/{user_id}", wrapper.PatchV1UsersUserId)
@@ -1302,6 +1360,33 @@ func (response PostV1Users422JSONResponse) VisitPostV1UsersResponse(w http.Respo
 	return json.NewEncoder(w).Encode(response)
 }
 
+type GetV1UsersTopRequestObject struct {
+	Params GetV1UsersTopParams
+}
+
+type GetV1UsersTopResponseObject interface {
+	VisitGetV1UsersTopResponse(w http.ResponseWriter) error
+}
+
+type GetV1UsersTop200JSONResponse struct {
+	Top []UserInTop `json:"top"`
+}
+
+func (response GetV1UsersTop200JSONResponse) VisitGetV1UsersTopResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetV1UsersTop401Response struct {
+}
+
+func (response GetV1UsersTop401Response) VisitGetV1UsersTopResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
 type PatchV1UsersUserIdRequestObject struct {
 	UserId string `json:"user_id"`
 	Params PatchV1UsersUserIdParams
@@ -1372,6 +1457,9 @@ type StrictServerInterface interface {
 
 	// (POST /v1/users)
 	PostV1Users(ctx context.Context, request PostV1UsersRequestObject) (PostV1UsersResponseObject, error)
+
+	// (GET /v1/users/top)
+	GetV1UsersTop(ctx context.Context, request GetV1UsersTopRequestObject) (GetV1UsersTopResponseObject, error)
 
 	// (PATCH /v1/users/{user_id})
 	PatchV1UsersUserId(ctx context.Context, request PatchV1UsersUserIdRequestObject) (PatchV1UsersUserIdResponseObject, error)
@@ -1715,6 +1803,32 @@ func (sh *strictHandler) PostV1Users(w http.ResponseWriter, r *http.Request) {
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
 	} else if validResponse, ok := response.(PostV1UsersResponseObject); ok {
 		if err := validResponse.VisitPostV1UsersResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetV1UsersTop operation middleware
+func (sh *strictHandler) GetV1UsersTop(w http.ResponseWriter, r *http.Request, params GetV1UsersTopParams) {
+	var request GetV1UsersTopRequestObject
+
+	request.Params = params
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.GetV1UsersTop(ctx, request.(GetV1UsersTopRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetV1UsersTop")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(GetV1UsersTopResponseObject); ok {
+		if err := validResponse.VisitGetV1UsersTopResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {

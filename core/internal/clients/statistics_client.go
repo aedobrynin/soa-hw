@@ -17,4 +17,5 @@ const (
 type StatisticsClient interface {
 	GetPostStatistics(ctx context.Context, postID model.PostID) (*model.PostStatistics, error)
 	GetTopPosts(ctx context.Context, orderBy OrderBy) ([]model.PostStatistics, error)
+	GetTopUsersByLikesCount(ctx context.Context) ([]model.UserStatistics, error)
 }

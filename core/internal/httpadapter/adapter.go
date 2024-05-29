@@ -90,6 +90,70 @@ func (a *adapter) PostV1Users(
 	}
 }
 
+// (GET /v1/users/top)
+func (a *adapter) GetV1UsersTop(
+	ctx context.Context,
+	request codegen.GetV1UsersTopRequestObject,
+) (codegen.GetV1UsersTopResponseObject, error) {
+	// TODO: use refresh token too
+	// TODO: make it helper function
+	_, _, err := a.authService.ValidateAndRefresh(
+		ctx,
+		&model.TokenPair{AccessToken: request.Params.XSESSION, RefreshToken: ""},
+	)
+	switch {
+	case errors.Is(err, service.ErrUnsupportedClaims) || errors.Is(err, service.ErrUnauthorized):
+		return codegen.GetV1UsersTop401Response{}, nil
+	case err != nil:
+		return nil, err
+	}
+
+	top, err := a.statisticsClient.GetTopUsersByLikesCount(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	type getUserRespType struct {
+		user *model.User
+		err  error
+	} // TODO: better
+	usersRespChan := make(chan getUserRespType, len(top)) // TODO: retrieve user only once
+	for _, userStats := range top {
+		go func(userID model.UserID) {
+			user, err := a.userService.GetUser(ctx, userID)
+			usersRespChan <- getUserRespType{user: user, err: err}
+		}(userStats.UserID)
+	}
+
+	users := make([]*model.User, 0, len(top))
+	for range top {
+		usersResp := <-usersRespChan
+		if usersResp.err != nil {
+			return nil, err
+		}
+		users = append(users, usersResp.user)
+	}
+
+	slices.SortFunc(users, func(a *model.User, b *model.User) int {
+		aIndx := slices.IndexFunc(top, func(stats model.UserStatistics) bool {
+			return stats.UserID == a.ID
+		})
+		bIndx := slices.IndexFunc(top, func(stats model.UserStatistics) bool {
+			return stats.UserID == b.ID
+		})
+		return aIndx - bIndx
+	})
+
+	res := make([]codegen.UserInTop, 0, len(top))
+	for i := 0; i < len(top); i++ {
+		res = append(res, codegen.UserInTop{
+			UserLogin:  users[i].Login,
+			LikesCount: top[i].LikesCount,
+		})
+	}
+	return codegen.GetV1UsersTop200JSONResponse{Top: res}, nil
+}
+
 // (PATCH /v1/users/{user_id})
 func (a *adapter) PatchV1UsersUserId(
 	ctx context.Context,

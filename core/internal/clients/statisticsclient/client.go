@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/google/uuid"
 	grpcretry "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/retry"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -59,6 +60,27 @@ func (c *StatisticsClient) GetTopPosts(ctx context.Context, orderBy clients.Orde
 			PostID:     postStats.PostId,
 			ViewsCount: postStats.ViewsCnt,
 			LikesCount: postStats.LikesCnt,
+		})
+	}
+	return res, nil
+}
+
+func (c *StatisticsClient) GetTopUsersByLikesCount(ctx context.Context) ([]model.UserStatistics, error) {
+	top, err := c.api.GetTopUsersByLikesCount(ctx, &gen.GetTopUsersByLikesCountRequest{Limit: 3})
+	if err != nil {
+		return nil, fmt.Errorf("error on getting top users from statistics service: %v", err)
+	}
+
+	res := make([]model.UserStatistics, 0, len(top.Top))
+	for _, userStats := range top.Top {
+		userID, err := uuid.Parse(userStats.UserId)
+		if err != nil {
+			return nil, fmt.Errorf("error on converting user_id from string to uuid: %v", err)
+		}
+
+		res = append(res, model.UserStatistics{
+			UserID:     userID,
+			LikesCount: userStats.LikesCount,
 		})
 	}
 	return res, nil

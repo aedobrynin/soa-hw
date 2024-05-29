@@ -134,6 +134,34 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/ErrorMessage'
 
+    /v1/users/top:
+        get:
+            description: get top 3 users by likes count
+            parameters:
+                # TODO: use refresh token too
+                - in: cookie
+                  name: X_SESSION
+                  schema:
+                      type: string
+                  required: true
+            responses:
+                '200':
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    top:
+                                        type: array
+                                        maxItems: 3
+                                        items:
+                                            $ref: '#/components/schemas/UserInTop'
+                                required:
+                                    - top
+                '401':
+                    description: Unathorized
+
     /v1/posts:
         post:
             description: create new post
@@ -492,3 +520,15 @@ components:
             required:
                 - post_id
                 - author_login
+
+        UserInTop:
+            type: object
+            properties:
+                user_login:
+                    type: string
+                likes_count:
+                    type: integer
+                    format: uint64
+            required:
+                - user_login
+                - likes_count

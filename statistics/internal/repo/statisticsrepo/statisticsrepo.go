@@ -106,7 +106,7 @@ func (r *statisticsRepo) GetTopUsersByLikesCount(ctx context.Context, limit uint
 	rows, err = r.conn.Query(
 		ctx,
 		fmt.Sprintf(
-			"SELECT post_author_id, count(DISTINCT (user_id, post_id)) as likes_cnt FROM posts_likes_indexed_by_post_author GROUP BY post_author_id ORDER BY likes_cnt LIMIT %d",
+			"SELECT post_author_id, count(DISTINCT (user_id, post_id)) as likes_cnt FROM posts_likes_indexed_by_post_author GROUP BY post_author_id ORDER BY likes_cnt DESC LIMIT %d",
 			limit,
 		),
 	)
