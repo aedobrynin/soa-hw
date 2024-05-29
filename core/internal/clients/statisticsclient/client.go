@@ -2,6 +2,7 @@ package statisticsclient
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	grpcretry "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/retry"
@@ -35,6 +36,32 @@ func (c *StatisticsClient) GetPostStatistics(ctx context.Context, postID model.P
 		return nil, fmt.Errorf("error on getting post statistics for id=%s: %v", postID, err)
 	}
 	return converToInternal(stats), nil
+}
+
+func (c *StatisticsClient) GetTopPosts(ctx context.Context, orderBy clients.OrderBy) ([]model.PostStatistics, error) {
+	var orderByExternal gen.GetTopPostsRequest_OrderBy
+	switch orderBy {
+	case clients.OrderByLikesCount:
+		orderByExternal = gen.GetTopPostsRequest_LIKES_CNT
+	case clients.OrderByViewsCount:
+		orderByExternal = gen.GetTopPostsRequest_VIEWS_CNT
+	default:
+		return nil, errors.New("bad order_by value")
+	}
+	top, err := c.api.GetTopPosts(ctx, &gen.GetTopPostsRequest{OrderBy: orderByExternal, Limit: 5})
+	if err != nil {
+		return nil, fmt.Errorf("error on getting top posts from statistics service: %v", err)
+	}
+
+	res := make([]model.PostStatistics, 0, len(top.Top))
+	for _, postStats := range top.Top {
+		res = append(res, model.PostStatistics{
+			PostID:     postStats.PostId,
+			ViewsCount: postStats.ViewsCnt,
+			LikesCount: postStats.LikesCnt,
+		})
+	}
+	return res, nil
 }
 
 func New(

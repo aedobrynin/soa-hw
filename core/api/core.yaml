@@ -391,6 +391,46 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/ErrorMessage'
 
+    /v1/posts/top:
+        get:
+            description: get top 5 posts
+            parameters:
+                # TODO: use refresh token too
+                - in: cookie
+                  name: X_SESSION
+                  schema:
+                      type: string
+                  required: true
+                - in: query
+                  name: order_by
+                  schema:
+                      type: string
+                      enum:
+                          - likes_count
+                          - views_count
+                  default: likes_count
+                  required: true
+            responses:
+                '200':
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    top:
+                                        type: array
+                                        maxItems: 5
+                                        items:
+                                            description: |
+                                                If order_by == likes_count, likes_count will be filled,
+                                                views_count will be filled otherwise.
+                                            $ref: '#/components/schemas/PostInTop'
+                                required:
+                                    - top
+                '401':
+                    description: Unathorized
+
 components:
     schemas:
         ErrorMessage:
@@ -431,3 +471,20 @@ components:
                     format: uint64
             required:
                 - post_id
+
+        PostInTop:
+            type: object
+            properties:
+                post_id:
+                    $ref: '#/components/schemas/PostID'
+                author_login:
+                    type: string
+                views_count:
+                    type: integer
+                    format: uint64
+                likes_count:
+                    type: integer
+                    format: uint64
+            required:
+                - post_id
+                - author_login
