@@ -7,6 +7,8 @@ option go_package = "github.com/aedobrynin/soa-hw/statistics//grpcadapter/gen";
 service Statistics {
   rpc GetPostStatistics(GetPostStatisticsRequest) returns (PostStatistics) {}
   rpc GetTopPosts(GetTopPostsRequest) returns (GetTopPostsResponse) {}
+  rpc GetTopUsersByLikesCount(GetTopUsersByLikesCountRequest)
+      returns (GetTopUsersByLikesCountResponse) {}
 }
 
 message GetPostStatisticsRequest { string post_id = 1; }
@@ -35,3 +37,11 @@ message CutPostStatistics {
 }
 
 message GetTopPostsResponse { repeated CutPostStatistics top = 1; }
+
+message GetTopUsersByLikesCountRequest { uint64 limit = 1; }
+
+message UserStatistics {
+  string user_id = 1;
+  uint64 likes_count = 2;
+}
+message GetTopUsersByLikesCountResponse { repeated UserStatistics top = 1; }

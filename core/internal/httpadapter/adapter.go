@@ -310,7 +310,18 @@ func (a *adapter) PostV1PostsPostIdMarkLiked(
 		return nil, err
 	}
 
-	err = a.statisticsService.AccountPostLike(ctx, model.PostLike{UserID: *userID, PostID: request.PostId})
+	post, err := a.postsClient.GetPost(ctx, request.PostId)
+	switch {
+	case errors.Is(err, clients.ErrPostNotFound):
+		return codegen.PostV1PostsPostIdMarkLiked404Response{}, nil
+	case err != nil:
+		return nil, err
+	}
+
+	err = a.statisticsService.AccountPostLike(
+		ctx,
+		model.PostLike{UserID: *userID, PostID: request.PostId, PostAuthorID: post.AuthorID},
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -335,7 +346,18 @@ func (a *adapter) PostV1PostsPostIdMarkViewed(
 		return nil, err
 	}
 
-	err = a.statisticsService.AccountPostView(ctx, model.PostView{UserID: *userID, PostID: request.PostId})
+	post, err := a.postsClient.GetPost(ctx, request.PostId)
+	switch {
+	case errors.Is(err, clients.ErrPostNotFound):
+		return codegen.PostV1PostsPostIdMarkViewed404Response{}, nil
+	case err != nil:
+		return nil, err
+	}
+
+	err = a.statisticsService.AccountPostView(
+		ctx,
+		model.PostView{UserID: *userID, PostID: request.PostId, PostAuthorID: post.AuthorID},
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -446,7 +468,7 @@ func (a *adapter) GetV1PostsTop(
 	postsRespChan := make(chan postsRespType, len(top))
 	for _, post := range top {
 		go func(postID model.PostID) {
-			post, err := a.postsClient.GetPost(ctx, post.PostID)
+			post, err := a.postsClient.GetPost(ctx, postID)
 			postsRespChan <- postsRespType{post: post, err: err}
 		}(post.PostID)
 	}

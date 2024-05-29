@@ -24,6 +24,7 @@ const _ = grpc.SupportPackageIsVersion7
 type StatisticsClient interface {
 	GetPostStatistics(ctx context.Context, in *GetPostStatisticsRequest, opts ...grpc.CallOption) (*PostStatistics, error)
 	GetTopPosts(ctx context.Context, in *GetTopPostsRequest, opts ...grpc.CallOption) (*GetTopPostsResponse, error)
+	GetTopUsersByLikesCount(ctx context.Context, in *GetTopUsersByLikesCountRequest, opts ...grpc.CallOption) (*GetTopUsersByLikesCountResponse, error)
 }
 
 type statisticsClient struct {
@@ -52,12 +53,22 @@ func (c *statisticsClient) GetTopPosts(ctx context.Context, in *GetTopPostsReque
 	return out, nil
 }
 
+func (c *statisticsClient) GetTopUsersByLikesCount(ctx context.Context, in *GetTopUsersByLikesCountRequest, opts ...grpc.CallOption) (*GetTopUsersByLikesCountResponse, error) {
+	out := new(GetTopUsersByLikesCountResponse)
+	err := c.cc.Invoke(ctx, "/statistics.Statistics/GetTopUsersByLikesCount", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // StatisticsServer is the server API for Statistics service.
 // All implementations must embed UnimplementedStatisticsServer
 // for forward compatibility
 type StatisticsServer interface {
 	GetPostStatistics(context.Context, *GetPostStatisticsRequest) (*PostStatistics, error)
 	GetTopPosts(context.Context, *GetTopPostsRequest) (*GetTopPostsResponse, error)
+	GetTopUsersByLikesCount(context.Context, *GetTopUsersByLikesCountRequest) (*GetTopUsersByLikesCountResponse, error)
 	mustEmbedUnimplementedStatisticsServer()
 }
 
@@ -70,6 +81,9 @@ func (UnimplementedStatisticsServer) GetPostStatistics(context.Context, *GetPost
 }
 func (UnimplementedStatisticsServer) GetTopPosts(context.Context, *GetTopPostsRequest) (*GetTopPostsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTopPosts not implemented")
+}
+func (UnimplementedStatisticsServer) GetTopUsersByLikesCount(context.Context, *GetTopUsersByLikesCountRequest) (*GetTopUsersByLikesCountResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTopUsersByLikesCount not implemented")
 }
 func (UnimplementedStatisticsServer) mustEmbedUnimplementedStatisticsServer() {}
 
@@ -120,6 +134,24 @@ func _Statistics_GetTopPosts_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Statistics_GetTopUsersByLikesCount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetTopUsersByLikesCountRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StatisticsServer).GetTopUsersByLikesCount(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/statistics.Statistics/GetTopUsersByLikesCount",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StatisticsServer).GetTopUsersByLikesCount(ctx, req.(*GetTopUsersByLikesCountRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Statistics_ServiceDesc is the grpc.ServiceDesc for Statistics service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -134,6 +166,10 @@ var Statistics_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetTopPosts",
 			Handler:    _Statistics_GetTopPosts_Handler,
+		},
+		{
+			MethodName: "GetTopUsersByLikesCount",
+			Handler:    _Statistics_GetTopUsersByLikesCount_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

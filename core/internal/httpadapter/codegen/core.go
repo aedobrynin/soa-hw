@@ -1202,6 +1202,14 @@ func (response PostV1PostsPostIdMarkLiked401Response) VisitPostV1PostsPostIdMark
 	return nil
 }
 
+type PostV1PostsPostIdMarkLiked404Response struct {
+}
+
+func (response PostV1PostsPostIdMarkLiked404Response) VisitPostV1PostsPostIdMarkLikedResponse(w http.ResponseWriter) error {
+	w.WriteHeader(404)
+	return nil
+}
+
 type PostV1PostsPostIdMarkViewedRequestObject struct {
 	PostId string `json:"post_id"`
 	Params PostV1PostsPostIdMarkViewedParams
@@ -1224,6 +1232,14 @@ type PostV1PostsPostIdMarkViewed401Response struct {
 
 func (response PostV1PostsPostIdMarkViewed401Response) VisitPostV1PostsPostIdMarkViewedResponse(w http.ResponseWriter) error {
 	w.WriteHeader(401)
+	return nil
+}
+
+type PostV1PostsPostIdMarkViewed404Response struct {
+}
+
+func (response PostV1PostsPostIdMarkViewed404Response) VisitPostV1PostsPostIdMarkViewedResponse(w http.ResponseWriter) error {
+	w.WriteHeader(404)
 	return nil
 }
 
