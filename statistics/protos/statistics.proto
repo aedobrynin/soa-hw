@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+package statistics;
+
+option go_package = "github.com/aedobrynin/soa-hw/statistics//grpcadapter/gen";
+
+service Statistics {
+  rpc GetPostStatistics(GetPostStatisticsRequest) returns (PostStatistics) {}
+  rpc GetTopPosts(GetTopPostsRequest) returns (GetTopPostsResponse) {}
+  rpc GetTopUsersByLikesCount(GetTopUsersByLikesCountRequest)
+      returns (GetTopUsersByLikesCountResponse) {}
+}
+
+message GetPostStatisticsRequest { string post_id = 1; }
+
+message PostStatistics {
+  string post_id = 1;
+  uint64 likes_cnt = 2;
+  uint64 views_cnt = 3;
+}
+
+message GetTopPostsRequest {
+  enum OrderBy {
+    LIKES_CNT = 0;
+    VIEWS_CNT = 1;
+  }
+
+  OrderBy order_by = 1;
+  uint64 limit = 2;
+}
+
+// Either likes_cnt or views_cnt is filled
+message CutPostStatistics {
+  string post_id = 1;
+  optional uint64 likes_cnt = 2;
+  optional uint64 views_cnt = 3;
+}
+
+message GetTopPostsResponse { repeated CutPostStatistics top = 1; }
+
+message GetTopUsersByLikesCountRequest { uint64 limit = 1; }
+
+message UserStatistics {
+  string user_id = 1;
+  uint64 likes_count = 2;
+}
+message GetTopUsersByLikesCountResponse { repeated UserStatistics top = 1; }

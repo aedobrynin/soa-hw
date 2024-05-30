@@ -101,6 +101,8 @@ services:
       interval: 2s
       timeout: 10s
       retries: 5
+    volumes: 
+    - ./clickhouse-data/statistics_clickhouse:/var/lib/clickhouse
     ports:
       - "8123:8123"
       - "9000:9000"

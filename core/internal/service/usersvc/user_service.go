@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/aedobrynin/soa-hw/core/internal/model"
 	"github.com/aedobrynin/soa-hw/core/internal/repo"
 	"github.com/aedobrynin/soa-hw/core/internal/service"
 )
@@ -97,6 +98,17 @@ func (s *userSvc) Edit(ctx context.Context, request service.EditRequest) error {
 		return err
 	}
 	return nil
+}
+
+func (s *userSvc) GetUser(ctx context.Context, userID model.UserID) (*model.User, error) {
+	user, err := s.repo.GetUserByID(ctx, userID)
+	switch {
+	case errors.Is(err, repo.ErrUserNotFound):
+		return nil, service.ErrUserNotFound
+	case err != nil:
+		return nil, err
+	}
+	return user, nil
 }
 
 func New(repo repo.User) service.User {

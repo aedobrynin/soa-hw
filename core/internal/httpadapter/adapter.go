@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"slices"
 
 	"github.com/aedobrynin/soa-hw/core/internal/clients"
 	"github.com/aedobrynin/soa-hw/core/internal/httpadapter/codegen"
@@ -25,7 +26,8 @@ type adapter struct {
 	userService       service.User
 	statisticsService service.Statistics
 
-	postsClient clients.PostsClient
+	postsClient      clients.PostsClient
+	statisticsClient clients.StatisticsClient
 
 	server *http.Server
 
@@ -86,6 +88,70 @@ func (a *adapter) PostV1Users(
 	default:
 		return codegen.PostV1Users200Response{}, nil
 	}
+}
+
+// (GET /v1/users/top)
+func (a *adapter) GetV1UsersTop(
+	ctx context.Context,
+	request codegen.GetV1UsersTopRequestObject,
+) (codegen.GetV1UsersTopResponseObject, error) {
+	// TODO: use refresh token too
+	// TODO: make it helper function
+	_, _, err := a.authService.ValidateAndRefresh(
+		ctx,
+		&model.TokenPair{AccessToken: request.Params.XSESSION, RefreshToken: ""},
+	)
+	switch {
+	case errors.Is(err, service.ErrUnsupportedClaims) || errors.Is(err, service.ErrUnauthorized):
+		return codegen.GetV1UsersTop401Response{}, nil
+	case err != nil:
+		return nil, err
+	}
+
+	top, err := a.statisticsClient.GetTopUsersByLikesCount(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	type getUserRespType struct {
+		user *model.User
+		err  error
+	} // TODO: better
+	usersRespChan := make(chan getUserRespType, len(top)) // TODO: retrieve user only once
+	for _, userStats := range top {
+		go func(userID model.UserID) {
+			user, err := a.userService.GetUser(ctx, userID)
+			usersRespChan <- getUserRespType{user: user, err: err}
+		}(userStats.UserID)
+	}
+
+	users := make([]*model.User, 0, len(top))
+	for range top {
+		usersResp := <-usersRespChan
+		if usersResp.err != nil {
+			return nil, err
+		}
+		users = append(users, usersResp.user)
+	}
+
+	slices.SortFunc(users, func(a *model.User, b *model.User) int {
+		aIndx := slices.IndexFunc(top, func(stats model.UserStatistics) bool {
+			return stats.UserID == a.ID
+		})
+		bIndx := slices.IndexFunc(top, func(stats model.UserStatistics) bool {
+			return stats.UserID == b.ID
+		})
+		return aIndx - bIndx
+	})
+
+	res := make([]codegen.UserInTop, 0, len(top))
+	for i := 0; i < len(top); i++ {
+		res = append(res, codegen.UserInTop{
+			UserLogin:  users[i].Login,
+			LikesCount: top[i].LikesCount,
+		})
+	}
+	return codegen.GetV1UsersTop200JSONResponse{Top: res}, nil
 }
 
 // (PATCH /v1/users/{user_id})
@@ -235,6 +301,9 @@ func (a *adapter) GetV1PostsPostId(
 	if errors.Is(err, clients.ErrPostNotFound) {
 		return codegen.GetV1PostsPostId404Response{}, nil
 	}
+	if err != nil {
+		return nil, err
+	}
 	return codegen.GetV1PostsPostId200JSONResponse(
 		codegen.Post{Id: post.ID, AuthorId: post.AuthorID.String(), Content: post.Content},
 	), nil
@@ -305,7 +374,18 @@ func (a *adapter) PostV1PostsPostIdMarkLiked(
 		return nil, err
 	}
 
-	err = a.statisticsService.AccountPostLike(ctx, model.PostLike{UserID: *userID, PostID: request.PostId})
+	post, err := a.postsClient.GetPost(ctx, request.PostId)
+	switch {
+	case errors.Is(err, clients.ErrPostNotFound):
+		return codegen.PostV1PostsPostIdMarkLiked404Response{}, nil
+	case err != nil:
+		return nil, err
+	}
+
+	err = a.statisticsService.AccountPostLike(
+		ctx,
+		model.PostLike{UserID: *userID, PostID: request.PostId, PostAuthorID: post.AuthorID},
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -330,11 +410,193 @@ func (a *adapter) PostV1PostsPostIdMarkViewed(
 		return nil, err
 	}
 
-	err = a.statisticsService.AccountPostView(ctx, model.PostView{UserID: *userID, PostID: request.PostId})
+	post, err := a.postsClient.GetPost(ctx, request.PostId)
+	switch {
+	case errors.Is(err, clients.ErrPostNotFound):
+		return codegen.PostV1PostsPostIdMarkViewed404Response{}, nil
+	case err != nil:
+		return nil, err
+	}
+
+	err = a.statisticsService.AccountPostView(
+		ctx,
+		model.PostView{UserID: *userID, PostID: request.PostId, PostAuthorID: post.AuthorID},
+	)
 	if err != nil {
 		return nil, err
 	}
 	return codegen.PostV1PostsPostIdMarkViewed200Response{}, nil
+}
+
+// (GET /v1/posts/{post_id}/stats)
+func (a *adapter) GetV1PostsPostIdStats(
+	ctx context.Context,
+	request codegen.GetV1PostsPostIdStatsRequestObject,
+) (codegen.GetV1PostsPostIdStatsResponseObject, error) {
+	// TODO: use refresh token too
+	// TODO: make it helper function
+	_, _, err := a.authService.ValidateAndRefresh(
+		ctx,
+		&model.TokenPair{AccessToken: request.Params.XSESSION, RefreshToken: ""},
+	)
+	switch {
+	case errors.Is(err, service.ErrUnsupportedClaims) || errors.Is(err, service.ErrUnauthorized):
+		return codegen.GetV1PostsPostIdStats401Response{}, nil
+	case err != nil:
+		return nil, err
+	}
+
+	type postsRespType struct {
+		Post *model.Post
+		err  error
+	} // TODO: better
+	postsRespChan := make(chan postsRespType, 1)
+	go func() {
+		post, err := a.postsClient.GetPost(ctx, request.PostId)
+		postsRespChan <- postsRespType{Post: post, err: err}
+		close(postsRespChan) // TODO: defer?
+	}()
+
+	type statsRespType struct {
+		Stats *model.PostStatistics
+		err   error
+	} // TODO: better
+	statsRespChan := make(chan statsRespType, 1)
+	go func() {
+		stats, err := a.statisticsClient.GetPostStatistics(ctx, request.PostId)
+		statsRespChan <- statsRespType{Stats: stats, err: err}
+		close(statsRespChan) // TODO: defer?
+	}()
+
+	postsResp := <-postsRespChan
+	if errors.Is(postsResp.err, clients.ErrPostNotFound) {
+		return codegen.GetV1PostsPostIdStats404Response{}, nil
+	}
+	if postsResp.err != nil {
+		return nil, err
+	}
+
+	statsResp := <-statsRespChan
+	if statsResp.err != nil {
+		return nil, err
+	}
+	if statsResp.Stats.LikesCount == nil {
+		a.logger.Sugar().Warnf("statistics service returned nil in LikesCount field for post_id=%s", request.PostId)
+	}
+	if statsResp.Stats.ViewsCount == nil {
+		a.logger.Sugar().Warnf("statistics service returned nil in ViewsCount field for post_id=%s", request.PostId)
+	}
+
+	return codegen.GetV1PostsPostIdStats200JSONResponse{LikesCount: statsResp.Stats.LikesCount,
+		PostId:     request.PostId,
+		ViewsCount: statsResp.Stats.ViewsCount}, nil
+}
+
+// (GET /v1/posts/top)
+func (a *adapter) GetV1PostsTop(
+	ctx context.Context,
+	request codegen.GetV1PostsTopRequestObject,
+) (codegen.GetV1PostsTopResponseObject, error) {
+	// TODO: use refresh token too
+	// TODO: make it helper function
+	_, _, err := a.authService.ValidateAndRefresh(
+		ctx,
+		&model.TokenPair{AccessToken: request.Params.XSESSION, RefreshToken: ""},
+	)
+	switch {
+	case errors.Is(err, service.ErrUnsupportedClaims) || errors.Is(err, service.ErrUnauthorized):
+		return codegen.GetV1PostsTop401Response{}, nil
+	case err != nil:
+		return nil, err
+	}
+
+	var orderByInternal clients.OrderBy
+	switch request.Params.OrderBy {
+	case codegen.LikesCount:
+		orderByInternal = clients.OrderByLikesCount
+	case codegen.ViewsCount:
+		orderByInternal = clients.OrderByViewsCount
+	default:
+		// This should be checked by oapi-codegen
+		return nil, errors.New("bad order_by value in httpadapter")
+	}
+	top, err := a.statisticsClient.GetTopPosts(ctx, orderByInternal)
+	if err != nil {
+		return nil, err
+	}
+
+	type postsRespType struct {
+		post *model.Post
+		err  error
+	} // TODO: better
+	postsRespChan := make(chan postsRespType, len(top))
+	for _, post := range top {
+		go func(postID model.PostID) {
+			post, err := a.postsClient.GetPost(ctx, postID)
+			postsRespChan <- postsRespType{post: post, err: err}
+		}(post.PostID)
+	}
+
+	posts := make([]*model.Post, 0, len(top))
+	for range top {
+		postsResp := <-postsRespChan
+		if postsResp.err != nil {
+			return nil, err
+		}
+		posts = append(posts, postsResp.post)
+	}
+
+	slices.SortFunc(posts, func(a *model.Post, b *model.Post) int {
+		aIndx := slices.IndexFunc(top, func(stats model.PostStatistics) bool {
+			return stats.PostID == a.ID
+		})
+		bIndx := slices.IndexFunc(top, func(stats model.PostStatistics) bool {
+			return stats.PostID == b.ID
+		})
+		return aIndx - bIndx
+	})
+
+	type getUserRespType struct {
+		user *model.User
+		err  error
+	} // TODO: better
+	usersRespChan := make(chan getUserRespType, len(top)) // TODO: retrieve user only once
+	for _, post := range posts {
+		go func(userID model.UserID) {
+			user, err := a.userService.GetUser(ctx, userID)
+			usersRespChan <- getUserRespType{user: user, err: err}
+		}(post.AuthorID)
+	}
+
+	users := make([]*model.User, 0, len(top))
+	for range top {
+		usersResp := <-usersRespChan
+		if usersResp.err != nil {
+			return nil, err
+		}
+		users = append(users, usersResp.user)
+	}
+
+	slices.SortFunc(users, func(a *model.User, b *model.User) int {
+		aIndx := slices.IndexFunc(posts, func(post *model.Post) bool {
+			return post.AuthorID == a.ID
+		})
+		bIndx := slices.IndexFunc(posts, func(post *model.Post) bool {
+			return post.AuthorID == b.ID
+		})
+		return aIndx - bIndx
+	})
+
+	res := make([]codegen.PostInTop, 0, len(top))
+	for i := 0; i < len(top); i++ {
+		res = append(res, codegen.PostInTop{
+			AuthorLogin: users[i].Login,
+			LikesCount:  top[i].LikesCount,
+			PostId:      top[i].PostID,
+			ViewsCount:  top[i].ViewsCount,
+		})
+	}
+	return codegen.GetV1PostsTop200JSONResponse{Top: res}, nil
 }
 
 func (a *adapter) Serve() error {
@@ -386,12 +648,14 @@ func NewAdapter(
 	authService service.Auth,
 	userService service.User,
 	statisticsService service.Statistics,
-	postsClient clients.PostsClient) Adapter {
+	postsClient clients.PostsClient,
+	statisticsClient clients.StatisticsClient) Adapter {
 	return &adapter{
 		cfg:               config,
 		authService:       authService,
 		userService:       userService,
 		statisticsService: statisticsService,
 		postsClient:       postsClient,
+		statisticsClient:  statisticsClient,
 	}
 }

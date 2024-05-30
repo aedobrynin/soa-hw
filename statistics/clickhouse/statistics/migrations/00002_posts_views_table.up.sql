@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS posts_views
     post_id String
 )
 ENGINE = MergeTree
-PRIMARY KEY (user_id, post_id);
+ORDER BY post_id;
 
 CREATE TABLE IF NOT EXISTS posts_views_queue
 (

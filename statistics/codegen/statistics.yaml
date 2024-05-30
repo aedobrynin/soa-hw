@@ -1,6 +1,0 @@
-output: internal/httpadapter/codegen/statistics.go
-package: codegen
-generate:
-    strict-server: true
-    chi-server: true
-    models: true

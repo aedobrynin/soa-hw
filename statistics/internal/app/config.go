@@ -6,11 +6,10 @@ import (
 
 	"gopkg.in/yaml.v3"
 
-	"github.com/aedobrynin/soa-hw/statistics/internal/httpadapter"
+	"github.com/aedobrynin/soa-hw/statistics/internal/grpcadapter"
 )
 
 const (
-	DefaultServeAddress    = "localhost:3000"
 	DefaultShutdownTimeout = 20 * time.Second
 	DefaultBasePath        = "/"
 	DefaultDbAddr          = "statistics_clickhouse:9440"
@@ -18,6 +17,7 @@ const (
 	DefaultDbUser          = "statistics"
 	DefaultDbPassword      = "statistics"
 	DefaultDbMigrationsDir = "file://clickhouse/statistics/migrations/"
+	DefaultGRPCPort        = 8080
 )
 
 type AppConfig struct {
@@ -34,9 +34,9 @@ type DatabaseConfig struct {
 }
 
 type Config struct {
-	App      AppConfig          `yaml:"app"`
-	Database DatabaseConfig     `yaml:"database"`
-	HTTP     httpadapter.Config `yaml:"http"`
+	App      AppConfig              `yaml:"app"`
+	Database DatabaseConfig         `yaml:"database"`
+	GRPC     grpcadapter.GRPCConfig `yaml:"grpc"`
 }
 
 func NewConfig(fileName string) (*Config, error) {
@@ -57,10 +57,8 @@ func NewConfig(fileName string) (*Config, error) {
 			Password:      DefaultDbPassword,
 			MigrationsDir: DefaultDbMigrationsDir,
 		},
-		HTTP: httpadapter.Config{
-			ServeAddress: DefaultServeAddress,
-			BasePath:     DefaultBasePath,
-			UseTLS:       false,
+		GRPC: grpcadapter.GRPCConfig{
+			Port: DefaultGRPCPort,
 		},
 	}
 

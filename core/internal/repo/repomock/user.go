@@ -30,6 +30,11 @@ func (m *UserMock) GetUser(ctx context.Context, login string) (*model.User, erro
 	return args.Get(0).(*model.User), args.Error(1)
 }
 
+func (m *UserMock) GetUserByID(ctx context.Context, userID model.UserID) (*model.User, error) {
+	args := m.Called(ctx, userID)
+	return args.Get(0).(*model.User), args.Error(1)
+}
+
 func (m *UserMock) ValidateUser(ctx context.Context, login, password string) (*model.User, error) {
 	args := m.Called(ctx, login, password)
 	return args.Get(0).(*model.User), args.Error(1)

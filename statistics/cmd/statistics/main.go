@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/aedobrynin/soa-hw/statistics/internal/app"
+	"github.com/aedobrynin/soa-hw/statistics/internal/logger"
 )
 
 func getConfigPath() string {
@@ -22,7 +23,12 @@ func main() {
 		log.Fatal(err)
 	}
 
-	a, err := app.New(config)
+	logger, err := logger.GetLogger(config.App.Debug)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	a, err := app.New(logger, config)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
