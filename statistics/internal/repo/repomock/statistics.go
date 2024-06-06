@@ -6,7 +6,6 @@ import (
 	"github.com/stretchr/testify/mock"
 
 	"github.com/aedobrynin/soa-hw/statistics/internal/model"
-	"github.com/aedobrynin/soa-hw/statistics/internal/repo"
 )
 
 type StatisticsMock struct {
@@ -34,6 +33,6 @@ func (m *StatisticsMock) GetTopUsersByLikesCount(ctx context.Context, limit uint
 	return args.Get(0).([]model.UserStatistics), args.Error(1)
 }
 
-func NewPost() repo.Statistics {
-	return &StatisticsMock{}
+func NewStatistics() StatisticsMock {
+	return StatisticsMock{}
 }
