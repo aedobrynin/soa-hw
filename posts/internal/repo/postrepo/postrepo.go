@@ -39,7 +39,8 @@ func (r *postRepo) WithNewTx(ctx context.Context, f func(ctx context.Context) er
 func (r *postRepo) AddPost(ctx context.Context, authorID model.UserID, content string) (model.PostID, error) {
 	postID := generatePostID()
 
-	_, err := r.conn(ctx).Exec(ctx, `INSERT INTO posts.posts (id, author_id, content) VALUES ($1, $2, $3)`,
+	_, err := r.conn(ctx).Exec(ctx, `INSERT INTO posts.posts (id, author_id, content)
+								     VALUES ($1, $2, $3)`,
 		postID, authorID, content)
 	if err != nil {
 		return uuid.Nil, err
@@ -51,7 +52,9 @@ func (r *postRepo) GetPost(ctx context.Context, postID model.PostID) (*model.Pos
 	var post model.Post
 
 	row := r.conn(ctx).
-		QueryRow(ctx, `SELECT id, author_id, content, created_ts, updated_ts FROM posts.posts WHERE id = $1`, postID)
+		QueryRow(ctx, `SELECT id, author_id, content, created_ts, updated_ts
+					   FROM posts.posts
+					   WHERE id = $1`, postID)
 	if err := row.Scan(&post.ID, &post.AuthorID, &post.Content, &post.CreatedTs, &post.UpdatedTs); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, repo.ErrPostNotFound
@@ -63,7 +66,9 @@ func (r *postRepo) GetPost(ctx context.Context, postID model.PostID) (*model.Pos
 }
 
 func (r *postRepo) EditPost(ctx context.Context, postID model.PostID, content string) error {
-	res, err := r.conn(ctx).Exec(ctx, `UPDATE posts.posts SET content = $1 WHERE id = $2`, content, postID)
+	res, err := r.conn(ctx).Exec(ctx, `UPDATE posts.posts
+									   SET content = $1
+									   WHERE id = $2`, content, postID)
 	if err != nil {
 		return err
 	}
@@ -74,7 +79,8 @@ func (r *postRepo) EditPost(ctx context.Context, postID model.PostID, content st
 }
 
 func (r *postRepo) DeletePost(ctx context.Context, postID model.PostID) error {
-	res, err := r.conn(ctx).Exec(ctx, `DELETE FROM posts.posts WHERE id = $1`, postID)
+	res, err := r.conn(ctx).Exec(ctx, `DELETE FROM posts.posts
+									   WHERE id = $1`, postID)
 	if err != nil {
 		return err
 	}
@@ -91,7 +97,11 @@ func (r *postRepo) ListPosts(ctx context.Context, from int, to int) ([]model.Pos
 	}()
 	r.logger.Debug("ListPosts: executing query")
 	rows, err := r.conn(ctx).
-		Query(ctx, `SELECT id, author_id, content, created_ts, updated_ts FROM posts.posts ORDER BY created_ts DESC LIMIT $1 OFFSET $2`, to-from, from)
+		Query(ctx, `SELECT id, author_id, content, created_ts, updated_ts
+					FROM posts.posts
+					ORDER BY created_ts DESC
+					LIMIT $1
+					OFFSET $2`, to-from, from)
 	if err != nil {
 		r.logger.Sugar().Debugf("error %v", err)
 		return nil, err

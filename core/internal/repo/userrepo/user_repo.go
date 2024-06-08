@@ -108,7 +108,9 @@ func (r *userRepo) GetUser(ctx context.Context, login string) (*model.User, erro
 	var user model.User
 
 	row := r.conn(ctx).
-		QueryRow(ctx, `SELECT id, login, password_hash, name, surname, email, phone FROM core.users WHERE login = $1`, login)
+		QueryRow(ctx, `SELECT id, login, password_hash, name, surname, email, phone
+					   FROM core.users
+					   WHERE login = $1`, login)
 	if err := row.Scan(&user.ID, &user.Login, &user.HashedPassword, &user.Name, &user.Surname, &user.Email, &user.Phone); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, repo.ErrUserNotFound
@@ -123,7 +125,9 @@ func (r *userRepo) GetUserByID(ctx context.Context, userID model.UserID) (*model
 	var user model.User
 
 	row := r.conn(ctx).
-		QueryRow(ctx, `SELECT id, login, password_hash, name, surname, email, phone FROM core.users WHERE id = $1`, userID)
+		QueryRow(ctx, `SELECT id, login, password_hash, name, surname, email, phone
+					   FROM core.users
+					   WHERE id = $1`, userID)
 	if err := row.Scan(&user.ID, &user.Login, &user.HashedPassword, &user.Name, &user.Surname, &user.Email, &user.Phone); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, repo.ErrUserNotFound

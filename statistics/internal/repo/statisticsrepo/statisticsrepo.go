@@ -22,14 +22,18 @@ func (r *statisticsRepo) GetPostStatistics(
 	postID model.PostID,
 ) (*model.PostStatistics, error) {
 	var viewsCnt uint64
-	row := r.conn.QueryRow(ctx, "SELECT count(DISTINCT user_id) FROM posts_views WHERE post_id = $1;", postID)
+	row := r.conn.QueryRow(ctx, `SELECT count(DISTINCT user_id)
+								 FROM posts_views
+								 WHERE post_id = $1;`, postID)
 	err := row.Scan(&viewsCnt)
 	if err != nil {
 		return nil, fmt.Errorf("error on get post views count: %v", err)
 	}
 
 	var likesCnt uint64
-	row = r.conn.QueryRow(ctx, "SELECT count(DISTINCT user_id) FROM posts_likes WHERE post_id = $1;", postID)
+	row = r.conn.QueryRow(ctx, `SELECT count(DISTINCT user_id)
+								FROM posts_likes
+								WHERE post_id = $1;`, postID)
 	err = row.Scan(&likesCnt)
 	if err != nil {
 		return nil, fmt.Errorf("error on get post likes count: %v", err)
@@ -54,7 +58,11 @@ func (r *statisticsRepo) GetTopPosts(
 		rows, err = r.conn.Query(
 			ctx,
 			fmt.Sprintf(
-				"SELECT post_id, count(DISTINCT user_id) AS likes_cnt FROM posts_likes GROUP BY post_id ORDER BY likes_cnt DESC LIMIT %d;",
+				`SELECT post_id, count(DISTINCT user_id) AS likes_cnt
+				 FROM posts_likes
+				 GROUP BY post_id
+				 ORDER BY likes_cnt DESC
+				 LIMIT %d;`,
 				request.Limit,
 			),
 		)
@@ -62,7 +70,11 @@ func (r *statisticsRepo) GetTopPosts(
 		rows, err = r.conn.Query(
 			ctx,
 			fmt.Sprintf(
-				"SELECT post_id, count(DISTINCT user_id) AS views_cnt FROM posts_views GROUP BY post_id ORDER BY views_cnt DESC LIMIT %d;",
+				`SELECT post_id, count(DISTINCT user_id) AS views_cnt
+				 FROM posts_views
+				 GROUP BY post_id
+				 ORDER BY views_cnt DESC
+				 LIMIT %d;`,
 				request.Limit,
 			),
 		)
@@ -106,7 +118,11 @@ func (r *statisticsRepo) GetTopUsersByLikesCount(ctx context.Context, limit uint
 	rows, err = r.conn.Query(
 		ctx,
 		fmt.Sprintf(
-			"SELECT post_author_id, count(DISTINCT (user_id, post_id)) as likes_cnt FROM posts_likes_indexed_by_post_author GROUP BY post_author_id ORDER BY likes_cnt DESC LIMIT %d",
+			`SELECT post_author_id, count(DISTINCT (user_id, post_id)) as likes_cnt
+			 FROM posts_likes_indexed_by_post_author
+			 GROUP BY post_author_id
+			 ORDER BY likes_cnt DESC
+			 LIMIT %d`,
 			limit,
 		),
 	)
