@@ -210,14 +210,14 @@ func (a *adapter) PostV1Posts(
 		return nil, err
 	}
 
-	_, err = a.postsClient.CreatePost(ctx, *userID, request.Body.Content)
+	postID, err := a.postsClient.CreatePost(ctx, *userID, request.Body.Content)
 	if errors.Is(err, clients.ErrContentIsEmpty) {
 		return codegen.PostV1Posts422JSONResponse(codegen.ErrorMessage{Error: err.Error()}), nil
 	}
 	if err != nil {
 		return nil, err
 	}
-	return codegen.PostV1Posts200Response{}, nil
+	return codegen.PostV1Posts200JSONResponse{PostId: postID}, nil
 }
 
 // (DELETE /v1/posts/{post_id})

@@ -41,7 +41,7 @@ jobs:
       - name: Run containers and tests
         run: |
           docker compose up -d core_service posts_service statistics_service
-          docker compose run tests
+          docker compose run integration_tests
       - name: Show core service logs
         run: docker compose logs --no-log-prefix core_service
       - name: Show posts service logs
