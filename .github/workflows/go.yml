@@ -5,30 +5,51 @@ name: Go
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ['main']
   pull_request:
-    branches: [ "main" ]
+    branches: ['main']
 
 jobs:
-  build_and_test:
+  run_unit_tests:
+    name: Unit tests
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         service_name: ['core', 'posts', 'statistics']
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21.1'
+
+      - name: Build
+        run: |
+          cd ${{ matrix.service_name }}
+          go build -v ./...
+
+      - name: Test
+        run: |
+          cd ${{ matrix.service_name }}
+          go test -v ./...
+
+  run_integration_tests:
+    name: Integrational tests
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-
-    - name: Set up Go
-      uses: actions/setup-go@v4
-      with:
-        go-version: '1.21.1'
-
-    - name: Build
-      run: |
-        cd ${{ matrix.service_name }}
-        go build -v ./...
-
-    - name: Test
-      run: |
-        cd ${{ matrix.service_name }}
-        go test -v ./...
+      - uses: actions/checkout@v3
+      - name: Build docker images
+        run: docker compose build
+      - name: Run containers and tests
+        run: |
+          docker compose up -d core_service posts_service statistics_service
+          docker compose run tests
+      - name: Show core service logs
+        run: docker compose logs --no-log-prefix core_service
+      - name: Show posts service logs
+        run: docker compose logs --no-log-prefix posts_service
+      - name: Show statistics service logs
+        run: docker compose logs --no-log-prefix statistics_service
+      - name: Stop Docker Compose
+        run: docker compose down
