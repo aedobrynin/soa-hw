@@ -187,6 +187,15 @@ paths:
             responses:
                 '200':
                     description: OK
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    post_id:
+                                        type: string
+                                required:
+                                    - post_id
                 '401':
                     description: Unathorized
                 '422':

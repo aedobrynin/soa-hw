@@ -142,9 +142,9 @@ services:
         condition: service_healthy
 
 # tests
-  tests:
+  integration_tests:
     build:
-      context: tests
+      context: integration_tests
     depends_on:
       - core_service
       - posts_service

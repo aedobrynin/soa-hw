@@ -1011,12 +1011,15 @@ type PostV1PostsResponseObject interface {
 	VisitPostV1PostsResponse(w http.ResponseWriter) error
 }
 
-type PostV1Posts200Response struct {
+type PostV1Posts200JSONResponse struct {
+	PostId string `json:"post_id"`
 }
 
-func (response PostV1Posts200Response) VisitPostV1PostsResponse(w http.ResponseWriter) error {
+func (response PostV1Posts200JSONResponse) VisitPostV1PostsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
-	return nil
+
+	return json.NewEncoder(w).Encode(response)
 }
 
 type PostV1Posts401Response struct {
