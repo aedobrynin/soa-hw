@@ -45,7 +45,7 @@ def test_like_post(make_user, auth_user, make_request, core_addr):
     )
     assert resp.status_code == 200
 
-    time.sleep(3)   # Wait for Kafka + ClickHouse processing
+    time.sleep(5)   # Wait for Kafka + ClickHouse processing
 
     resp = make_request('GET', core_addr, f'/v1/posts/{post_id}/stats', cookies=user.auth_cookies)
     assert resp.status_code == 200

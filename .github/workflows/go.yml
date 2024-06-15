@@ -6,9 +6,12 @@ on:
   pull_request:
     branches: ['main']
 
+# TODO: Запускать посервисно юнит-тесты и тесты уровня сервиса (в отдельных джобах)
+# Запускать инт. тесты, только когда пройдены посервисные
+
 jobs:
-  run_unit_tests:
-    name: Unit tests
+  run_unit_and_service_level_tests:
+    name: Unit and service level tests
     runs-on: ubuntu-latest
     strategy:
       matrix:
