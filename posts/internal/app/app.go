@@ -23,7 +23,7 @@ func (a *App) Serve() error {
 		defer func() {
 			_ = a.logger.Sync()
 		}()
-		a.logger.Fatal(err.Error())
+		a.logger.Error(err.Error())
 	}
 	return nil
 }

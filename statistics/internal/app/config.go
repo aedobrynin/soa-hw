@@ -11,6 +11,7 @@ import (
 
 const (
 	DefaultShutdownTimeout = 20 * time.Second
+	DefaultDebug           = true
 	DefaultBasePath        = "/"
 	DefaultDbAddr          = "statistics_clickhouse:9440"
 	DefaultDbDatabase      = "statistics"
@@ -47,7 +48,7 @@ func NewConfig(fileName string) (*Config, error) {
 
 	cnf := Config{
 		App: AppConfig{
-			Debug:           false,
+			Debug:           DefaultDebug,
 			ShutdownTimeout: DefaultShutdownTimeout,
 		},
 		Database: DatabaseConfig{

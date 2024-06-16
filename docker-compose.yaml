@@ -83,7 +83,7 @@ services:
         condition: service_healthy
 
   statistics_clickhouse:
-    image: clickhouse/clickhouse-server
+    image: clickhouse/clickhouse-server:24.4
     restart: always
     environment:
       CLICKHOUSE_DB: statistics
